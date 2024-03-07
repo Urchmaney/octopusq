@@ -12,9 +12,9 @@ export default function OrgChartGraph() {
   const [space, setSpace] = useState<CanvasSpace | null>(null);
   const [form, setForm] = useState<CanvasForm | null>(null);
   const [hovered, setHovered] = useState(false);
-  
+
   useEffect(() => {
-   
+
     if (space && form) {
       space.clear();
       handleAnimate(space, form);
@@ -38,10 +38,10 @@ export default function OrgChartGraph() {
       new Pt(space.size.x, space.pointer.y)
     );
 
-    
 
 
-   
+
+
 
     // Draw the bars and also check intersection with the pointer's line
     let intersects = bars.map((b, i) => {
@@ -55,8 +55,10 @@ export default function OrgChartGraph() {
 
   };
 
+
+
   return (
-    <div onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)} style={{ width: "80%"}}>
+    <div onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)} style={{ width: "80%" }}>
       <PtsCanvas
         name={name}
         play={hovered}
