@@ -3,7 +3,7 @@ import { CloseIcon } from "@/components/icons/close";
 import { Button } from "@nextui-org/react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import Tree, { TreeProps } from "react-d3-tree";
-import Graph, { Data, GraphEvents, Options } from "react-graph-vis";
+import Graph, { Data, GraphEvents, Options, graphData } from "react-graph-vis";
 import { v4 } from "uuid";
 
 
@@ -22,7 +22,7 @@ export default function Page() {
     setIsClient(true);
   });
 
-  const graph: Data = {
+  const graph: graphData = {
     nodes: [
       { id: 1, label: "Node 1", title: "node 2 tootip text" },
       { id: 2, label: "Node 2", title: "node 2 tootip text" },
