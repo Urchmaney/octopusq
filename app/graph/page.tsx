@@ -60,7 +60,7 @@ export default function Page() {
 
   const events = {
     select: function (event: GraphEvents) {
-      var { nodes, edges } = event;
+      // const { nodes, edges } = event;
       
       setShowNode(true)
     }
