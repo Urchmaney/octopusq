@@ -1,5 +1,5 @@
 'use client'
-import { Bound, CanvasForm, CanvasSpace, Geom, Group, Line, Pt, Space, Triangle } from "pts"
+import { Bound, CanvasForm, CanvasSpace, Geom, Group, Line, Pt, Rectangle, Space, Triangle } from "pts"
 import { useEffect, useRef, useState } from "react";
 import { PtsCanvas } from "react-pts-canvas";
 
@@ -42,7 +42,8 @@ export default function OrgChartGraph() {
   const [space, setSpace] = useState<CanvasSpace | null>(null);
   const [form, setForm] = useState<CanvasForm | null>(null);
   const [hovered, setHovered] = useState(false);
-  const [translateOffSet, setTranslateOffset] = useState<[number, number]>([0,0])
+  const [translateOffSet, setTranslateOffset] = useState<[number, number]>([0,0]);
+  const [position, setPosition] = useState<[number, number]>([0, 0])
   
   useEffect(() => {
    
@@ -97,18 +98,34 @@ export default function OrgChartGraph() {
 
     // const p = Line.perpendicularFromPt(points, new Pt(points[1].x -10, points[1].y - 10))
     // form.fillOnly("#000").point(p, 10, "polygon")
-    renderNode(form, graph, 0, 0)
+
+    renderNode(form, graph, 0, 0, space.pointer)
 
   };
 
+  const translatedPoint = (point: Pt) : Pt => {
+    return new Pt(point.x + translateOffSet[0], point.y + translateOffSet[1])
+  }
 
-  const renderNode = (form: CanvasForm, node: Node, xIndex: number, yIndex: number): Pt => {
-    const point = new Pt((xIndex * 200) + 100, (yIndex * 200) + 100);
-    console.log(`${xIndex * 100},   ${yIndex * 200}`)
-    form.fillOnly("#f98").point(point, 80, "square");
+
+  const renderNode = (form: CanvasForm, node: Node, xIndex: number, yIndex: number, cursorPoint: Pt): Pt => {
+    const point = translatedPoint(new Pt(50 + (xIndex * 200) , 50 + (yIndex * 200)));
+  
+    const rect = Rectangle.fromCenter(point, 80);
+    if (Rectangle.withinBound(rect, cursorPoint)) {
+      const biggerRect = Rectangle.fromCenter(point, 85);
+      form.fillOnly("#000").rect(biggerRect);
+      console.log("==================")
+      console.log([point.x, point.y])
+      console.log([cursorPoint.x, cursorPoint.y])
+      console.log(translateOffSet)
+      console.log("======================")
+    }
+    form.fillOnly("#f98").rect(rect);
+    
 
     node.children?.forEach((n, i) => {
-      const nodePoint = renderNode(form, n, xIndex + 1, i);
+      const nodePoint = renderNode(form, n, xIndex + 1, i, cursorPoint);
       
       form.stroke("#f98").line([point, nodePoint])
     });
@@ -118,18 +135,40 @@ export default function OrgChartGraph() {
 
   const onActionPerformed = (space: CanvasSpace, form: CanvasForm, type: string, px: number, py: number, evt: Event) => {
     const pEvt = evt as PointerEvent;
+
+    // console.log(pEvt.offsetX, pEvt.offsetY, "======")
+    if (type === "drop") {
+      console.log("drop")
+      setPosition([0,0])
+    }
+
     if (type === "drag") {
-      space.clear();
-      space.ctx.translate(pEvt.movementX, pEvt.movementY);
-      setTranslateOffset([translateOffSet[0] + pEvt.movementX, translateOffSet[1] + pEvt.movementY])
-      // console.log("draging", pEvt)
+      
+      let diff = [pEvt.screenX - position[0], pEvt.screenY - position[1]];
+
+      console.log("drag")
+      if (!position[0] && !position[1]) {
+        diff = [0, 0]
+      }
+     
+      setPosition([pEvt.offsetX, pEvt.offsetY]);
+      setTranslateOffset([translateOffSet[0] + diff[0], translateOffSet[1] - diff[1]])
+      // const x = pEvt.pageX - space.ctx.canvas.offsetLeft;
+      // const y = pEvt.pageY - space.ctx.canvas.offsetTop
+      // space.ctx.translate(x, y);
+      
+      // console.log(pEvt.clientX, pEvt.movementX);
+      // console.log(pEvt.clientY, pEvt.movementY);
+
+      // setTranslateOffset([x, y])
+      // space.clear();
     }
     if (type === "click") {
     
      
-    
+      console.log("click")
       // space.ctx.translate(200, 0);
-      console.log(space.pixelScale, type, pEvt.clientX, pEvt.clientY)
+
     }
   }
 
