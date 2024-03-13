@@ -19,7 +19,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.className} bg-no-repeat min-h-dvh`} >
 
-        <Script>
+        <Script id="chatbot">
           {
             `(function (w, d, s, o, f, js, fjs) {
             w['MyWidget'] = o; w[o] = w[o] || function () {(w[o].q = w[o].q || []).push(arguments)};
