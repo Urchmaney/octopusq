@@ -1,0 +1,14 @@
+{
+    "nodes": [
+        {
+            "id": 1,
+            "title": "",
+            "edges": []
+        },
+        {
+            "id": 2,
+            "title": "",
+            "edges": [ { "id": 1, "title": "What is Money?" }]
+        }
+    ]
+}

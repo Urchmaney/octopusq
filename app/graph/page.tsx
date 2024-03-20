@@ -1,4 +1,5 @@
 'use client'
+import { useNodeRepoContext } from "@/contexts/node.repo.context";
 import { MarkDownEditor } from "@/lib/components/mark-down-editor";
 import { CheckIcon } from "@/lib/icons/check";
 import { CloseIcon } from "@/lib/icons/close";
@@ -6,18 +7,37 @@ import { EditIcon } from "@/lib/icons/edit";
 import { Button } from "@nextui-org/react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import Tree, { TreeProps } from "react-d3-tree";
-import Graph, { Data, GraphEvents, Options, graphData } from "react-graph-vis";
+import Graph, { Data, Edge, GraphEvents, Options, graphData } from "react-graph-vis";
 import { v4 } from "uuid";
+import { Node } from "@/models/node";
 
 
 
 export default function Page() {
   const [isClient, setIsClient] = useState(false);
   const [size, setSize] = useState([0, 1212]);
-  const [showNode, setShowNode] = useState(true)
+  const [showNode, setShowNode] = useState(false);
+  const [nodes, setNodes] = useState<Node[]>([]);
+  const [edges, setEdges] = useState<Edge[]>([]);
 
   const [markDown, setMarkDown] = useState<string | undefined>("**Welcome**")
   const [markdownEdit, setMarkDownEdit] = useState(false)
+
+  const nodeRepoService = useNodeRepoContext();
+
+  useEffect(() => {
+    nodeRepoService?.getNodes().then(data => {
+      setNodes(data);
+      const sEdges: Edge[] = data.map(x =>
+        x.edges.map(y => ({
+          from: x.id,
+          to: y.id,
+          label: y.title
+        })
+      )).flat();
+      setEdges(sEdges);
+    })
+  }, [])
 
 
   useLayoutEffect(() => {
@@ -28,23 +48,27 @@ export default function Page() {
     setIsClient(true);
   });
 
-  const graph: graphData = {
-    nodes: [
-      { id: 1, label: "Node 1", title: "node 2 tootip text" },
-      { id: 2, label: "Node 2", title: "node 2 tootip text" },
-      { id: 3, label: "Node 3", title: "node 3 tootip text", x: 10, y: 10, physics: false, fixed: { x: true, y: true } },
-      { id: 4, label: "Node 4", title: "node 4 tootip text" },
-      { id: 5, label: "Node 5", title: "node 5 tootip text" },
-      { id: 7, label: "Node 7", title: "node 7 tootip text" }
-    ],
-    edges: [
-      { from: 1, to: 2, label: "Lmaa" },
-      { from: 1, to: 3 },
-      { from: 2, to: 4 },
-      { from: 2, to: 5 }
-    ]
-  };
+  // const graph: graphData = {
+  //   nodes: [
+  //     { id: 1, label: "Node 1", title: "node 2 tootip text" },
+  //     { id: 2, label: "Node 2", title: "node 2 tootip text" },
+  //     { id: 3, label: "Node 3", title: "node 3 tootip text", x: 10, y: 10, physics: false, fixed: { x: true, y: true } },
+  //     { id: 4, label: "Node 4", title: "node 4 tootip text" },
+  //     { id: 5, label: "Node 5", title: "node 5 tootip text" },
+  //     { id: 7, label: "Node 7", title: "node 7 tootip text" }
+  //   ],
+  //   edges: [
+  //     { from: 1, to: 2, label: "Lmaa" },
+  //     { from: 1, to: 3 },
+  //     { from: 2, to: 4 },
+  //     { from: 2, to: 5 }
+  //   ]
+  // };
 
+  const graph: graphData = {
+    nodes: nodes,
+    edges: edges
+  };
   const options: Options = {
     autoResize: true,
     layout: {
@@ -77,6 +101,7 @@ export default function Page() {
       {
         isClient ?
           <div className="">
+            <Button>Add Node</Button>
             <Graph
               key={v4()}
               graph={graph}
