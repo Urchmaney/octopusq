@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Script from "next/script";
+import { Providers } from "./provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -29,9 +30,12 @@ export default function RootLayout({
           mw('init', {botId: "08ca426357e14d67b33df4c4c506c502" });`
           }
         </Script>
-        <main>
-          {children}
-        </main>
+        <Providers>
+          <main>
+            {children}
+          </main>
+        </Providers>
+
       </body>
     </html>
   );
