@@ -1,5 +1,5 @@
 export type Node = {
-    id: number,
+    id?: number | string,
     title: string,
-    edges: { id: number, title: string }[]
+    edges: { id: number | string, title: string }[]
 }
