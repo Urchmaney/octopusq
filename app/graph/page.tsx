@@ -1,23 +1,69 @@
 'use client'
+import { useNodeRepoContext } from "@/contexts/node.repo.context";
 import { MarkDownEditor } from "@/lib/components/mark-down-editor";
 import { CheckIcon } from "@/lib/icons/check";
 import { CloseIcon } from "@/lib/icons/close";
 import { EditIcon } from "@/lib/icons/edit";
 import { Button } from "@nextui-org/react";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Component, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Tree, { TreeProps } from "react-d3-tree";
-import Graph, { Data, GraphEvents, Options, graphData } from "react-graph-vis";
+import Graph, { Data, Edge, GraphEvents, NetworkEvents, Options, graphData } from "react-graph-vis";
 import { v4 } from "uuid";
+import { Node } from "@/models/node";
+import React from "react";
 
 
+function GGraph({ graph, options, events}: {  graph: graphData, options: Options, events: GraphEvents | undefined }) {
+
+  return (
+    <div>
+      <Graph
+        key={v4()}
+        graph={graph}
+        options={options}
+        events={events}
+        getNetwork={network => {
+          //  if you want access to vis.js network api you can set the state in a parent component using this property
+        }}
+
+      />
+    </div>
+
+  )
+}
 
 export default function Page() {
   const [isClient, setIsClient] = useState(false);
   const [size, setSize] = useState([0, 1212]);
-  const [showNode, setShowNode] = useState(true)
+  const [showNode, setShowNode] = useState(false);
+  const [nodes, setNodes] = useState<Node[]>([]);
+  const [edges, setEdges] = useState<Edge[]>([]);
+
+  const [actionPoint, setActionPoint] = useState<[number, number]>([300, 200])
 
   const [markDown, setMarkDown] = useState<string | undefined>("**Welcome**")
   const [markdownEdit, setMarkDownEdit] = useState(false)
+
+  const nodeRepoService = useNodeRepoContext();
+
+  useEffect(() => {
+    nodeRepoService?.getNodes().then(data => {
+      setNodes(data);
+      const sEdges: Edge[] = data.map(x =>
+        x.edges.map((y, i) => ({
+          from: x.id,
+          to: y.id,
+          label: y.title,
+          // selfReference: {
+          //   size: 50,
+          //   angle: 30
+          // }
+        })
+        )).flat();
+
+      setEdges(sEdges);
+    })
+  }, [])
 
 
   useLayoutEffect(() => {
@@ -28,28 +74,40 @@ export default function Page() {
     setIsClient(true);
   });
 
+
+  const addNewNode = () => {
+    nodeRepoService?.addNode({ title: "Untitled", edges: [] }).then(success => {
+      if (success) setNodes([...nodes, { title: "Untitled", edges: [] }]);
+    })
+  }
+  // const graph: graphData = {
+  //   nodes: [
+  //     { id: 1, label: "Node 1", title: "node 2 tootip text" },
+  //     { id: 2, label: "Node 2", title: "node 2 tootip text" },
+  //     { id: 3, label: "Node 3", title: "node 3 tootip text", x: 10, y: 10, physics: false, fixed: { x: true, y: true } },
+  //     { id: 4, label: "Node 4", title: "node 4 tootip text" },
+  //     { id: 5, label: "Node 5", title: "node 5 tootip text" },
+  //     { id: 7, label: "Node 7", title: "node 7 tootip text" }
+  //   ],
+  //   edges: [
+  //     { from: 1, to: 2, label: "Lmaa" },
+  //     { from: 1, to: 3 },
+  //     { from: 2, to: 4 },
+  //     { from: 2, to: 5 }
+  //   ]
+  // };
+
+
   const graph: graphData = {
-    nodes: [
-      { id: 1, label: "Node 1", title: "node 2 tootip text" },
-      { id: 2, label: "Node 2", title: "node 2 tootip text" },
-      { id: 3, label: "Node 3", title: "node 3 tootip text", x: 10, y: 10, physics: false, fixed: { x: true, y: true } },
-      { id: 4, label: "Node 4", title: "node 4 tootip text" },
-      { id: 5, label: "Node 5", title: "node 5 tootip text" },
-      { id: 7, label: "Node 7", title: "node 7 tootip text" }
-    ],
+    nodes: nodes,
     edges: [
-      { from: 1, to: 2, label: "Lmaa" },
-      { from: 1, to: 3 },
-      { from: 2, to: 4 },
-      { from: 2, to: 5 }
+      ...edges,
     ]
   };
-
   const options: Options = {
+
+
     autoResize: true,
-    layout: {
-      randomSeed: 8
-    },
     edges: {
       color: "#f65"
     },
@@ -58,26 +116,37 @@ export default function Page() {
     nodes: {
       shape: "square",
       physics: false,
-    },
-    physics: {
-      stabilization: false
+
     }
   };
 
   const events = {
-    select: function (event: GraphEvents) {
-      // const { nodes, edges } = event;
-
+    selectNode: function (event: any) {
+      // const { node, edges } = event;
+      console.log(event)
+      setActionPoint([event?.pointer.DOM.x, event?.pointer.DOM.y])
       setShowNode(true)
-    }
+    },
   };
+
+  const MemoizedGraph = React.memo(GGraph, (prev, current) => {
+    return prev.graph.nodes.length === current.graph.nodes.length
+  })
 
   return (
     <div className="relative">
+      <div className={`absolute`} style={{ left: actionPoint[0], top: actionPoint[1] }}> Node Menu</div>
       {
         isClient ?
           <div className="">
-            <Graph
+            <Button onClick={addNewNode}>Add Node</Button>
+            <MemoizedGraph
+              key={v4()}
+              graph={graph}
+              options={options}
+              events={events}
+            />
+            {/* <Graph
               key={v4()}
               graph={graph}
               options={options}
@@ -86,8 +155,8 @@ export default function Page() {
                 //  if you want access to vis.js network api you can set the state in a parent component using this property
               }}
 
-            />
-          </div>
+            />*/}
+          </div> 
           :
           <div></div>
       }
