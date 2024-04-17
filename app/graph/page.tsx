@@ -5,13 +5,32 @@ import { CheckIcon } from "@/lib/icons/check";
 import { CloseIcon } from "@/lib/icons/close";
 import { EditIcon } from "@/lib/icons/edit";
 import { Button } from "@nextui-org/react";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Component, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Tree, { TreeProps } from "react-d3-tree";
-import Graph, { Data, Edge, GraphEvents, Options, graphData } from "react-graph-vis";
+import Graph, { Data, Edge, GraphEvents, NetworkEvents, Options, graphData } from "react-graph-vis";
 import { v4 } from "uuid";
 import { Node } from "@/models/node";
+import React from "react";
 
 
+function GGraph({ graph, options, events}: {  graph: graphData, options: Options, events: GraphEvents | undefined }) {
+
+  return (
+    <div>
+      <Graph
+        key={v4()}
+        graph={graph}
+        options={options}
+        events={events}
+        getNetwork={network => {
+          //  if you want access to vis.js network api you can set the state in a parent component using this property
+        }}
+
+      />
+    </div>
+
+  )
+}
 
 export default function Page() {
   const [isClient, setIsClient] = useState(false);
@@ -19,6 +38,8 @@ export default function Page() {
   const [showNode, setShowNode] = useState(false);
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
+
+  const [actionPoint, setActionPoint] = useState<[number, number]>([300, 200])
 
   const [markDown, setMarkDown] = useState<string | undefined>("**Welcome**")
   const [markdownEdit, setMarkDownEdit] = useState(false)
@@ -29,12 +50,17 @@ export default function Page() {
     nodeRepoService?.getNodes().then(data => {
       setNodes(data);
       const sEdges: Edge[] = data.map(x =>
-        x.edges.map(y => ({
+        x.edges.map((y, i) => ({
           from: x.id,
           to: y.id,
-          label: y.title
+          label: y.title,
+          // selfReference: {
+          //   size: 50,
+          //   angle: 30
+          // }
         })
-      )).flat();
+        )).flat();
+
       setEdges(sEdges);
     })
   }, [])
@@ -48,6 +74,12 @@ export default function Page() {
     setIsClient(true);
   });
 
+
+  const addNewNode = () => {
+    nodeRepoService?.addNode({ title: "Untitled", edges: [] }).then(success => {
+      if (success) setNodes([...nodes, { title: "Untitled", edges: [] }]);
+    })
+  }
   // const graph: graphData = {
   //   nodes: [
   //     { id: 1, label: "Node 1", title: "node 2 tootip text" },
@@ -65,15 +97,17 @@ export default function Page() {
   //   ]
   // };
 
+
   const graph: graphData = {
     nodes: nodes,
-    edges: edges
+    edges: [
+      ...edges,
+    ]
   };
   const options: Options = {
+
+
     autoResize: true,
-    layout: {
-      randomSeed: 8
-    },
     edges: {
       color: "#f65"
     },
@@ -82,27 +116,37 @@ export default function Page() {
     nodes: {
       shape: "square",
       physics: false,
-    },
-    physics: {
-      stabilization: false
+
     }
   };
 
   const events = {
-    select: function (event: GraphEvents) {
-      // const { nodes, edges } = event;
-
+    selectNode: function (event: any) {
+      // const { node, edges } = event;
+      console.log(event)
+      setActionPoint([event?.pointer.DOM.x, event?.pointer.DOM.y])
       setShowNode(true)
-    }
+    },
   };
+
+  const MemoizedGraph = React.memo(GGraph, (prev, current) => {
+    return prev.graph.nodes.length === current.graph.nodes.length
+  })
 
   return (
     <div className="relative">
+      <div className={`absolute`} style={{ left: actionPoint[0], top: actionPoint[1] }}> Node Menu</div>
       {
         isClient ?
           <div className="">
-            <Button>Add Node</Button>
-            <Graph
+            <Button onClick={addNewNode}>Add Node</Button>
+            <MemoizedGraph
+              key={v4()}
+              graph={graph}
+              options={options}
+              events={events}
+            />
+            {/* <Graph
               key={v4()}
               graph={graph}
               options={options}
@@ -111,8 +155,8 @@ export default function Page() {
                 //  if you want access to vis.js network api you can set the state in a parent component using this property
               }}
 
-            />
-          </div>
+            />*/}
+          </div> 
           :
           <div></div>
       }
