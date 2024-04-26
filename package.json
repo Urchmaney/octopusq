@@ -19,7 +19,8 @@
     "react-dom": "^18",
     "react-graph-vis": "^1.0.7",
     "react-pts-canvas": "^0.4.0",
-    "uuidv4": "^6.2.13"
+    "uuidv4": "^6.2.13",
+    "@dnd-kit/core": "^6.1.0"
   },
   "devDependencies": {
     "@types/node": "^20",
