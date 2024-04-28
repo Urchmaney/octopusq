@@ -38,3 +38,51 @@ export class NodeFirebaseService implements INodeServiceInterface {
   }
 
 }
+
+export class FirestoreService<T> {
+  private appFirestore: Firestore;
+  private collectionName: string;
+  private suffix: string;
+
+  private readonly FIREBASE_CONVERTER = {
+    fromFirestore: (snap: QueryDocumentSnapshot) => snap.data() as T,
+    toFirestore: (data: Partial<T>) => data
+  }
+
+  constructor(firebaseApp: FirebaseApp, collectionName: string, suffix: string) {
+    this.appFirestore = getFirestore(firebaseApp);
+    this.collectionName = collectionName;
+    this.suffix = `${suffix[0].toUpperCase()}${suffix.substring(1).toLowerCase()}`;
+
+    this.add = this.add.bind(this);
+  }
+
+  private async add(val: T): Promise<T | null> {
+    try {
+      const collectionRef = collection(this.appFirestore, this.collectionName).withConverter<Partial<T>, Partial<T>>(this.FIREBASE_CONVERTER)
+      const result =  await addDoc(collectionRef, val);
+      return { id: result.id, ...val };
+    } catch (error) {
+      console.log(error)
+      return null;
+    }
+  }
+
+  private async getAll(): Promise<T[]> {
+    try {
+      const collectionRef = collection(this.appFirestore, this.collectionName).withConverter<Partial<T>, Partial<T>>(this.FIREBASE_CONVERTER);
+      const snapshot = await getDocs(collectionRef);
+      return snapshot.docs.map((x) =>  ({ id: x.id, ...x.data() }) as T);
+    }
+    catch(err) {
+      return []
+    }
+  }
+
+  functions() {
+    return {
+      [`get${this.suffix}s`]: this.getAll,
+      [`add${this.suffix}`]: this.add
+    }
+  }
+}
