@@ -1,23 +1,27 @@
 "use client"
 
 import { DraggableIndicatorIcon } from "@/lib/icons/draggable-icon";
-import { DndContext, DragEndEvent, DragOverEvent, useDraggable, useDroppable } from "@dnd-kit/core";
+import { DndContext, DragEndEvent, DragOverEvent, KeyboardSensor, PointerSensor, TouchSensor, closestCorners, useSensor, useSensors } from "@dnd-kit/core";
+import { SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { CSS } from "@dnd-kit/utilities";
 import { Card, CardHeader, Divider, CardBody, CardFooter, Link, Image } from "@nextui-org/react";
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
+
 
 
 function DraggableQuestionBox({ dragId, question }: { dragId: string, question: string }) {
-  const { attributes, listeners, setNodeRef, transform, setActivatorNodeRef } = useDraggable({
+  const { attributes, listeners, setNodeRef, transform, setActivatorNodeRef, transition } = useSortable({
     id: dragId
   })
 
-  
-  const style = transform ? {
-    transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-  } : undefined;
+
+  const style = {
+    transition,
+    transform: CSS.Transform.toString(transform)
+  };
 
   return (
-    <div key={`question-${dragId}`} ref={setNodeRef} style={style}>
+    <div ref={setNodeRef} style={style}>
       <Card className="max-w-[400px]">
         <CardHeader className="flex gap-3">
           <div {...listeners} {...attributes}>
@@ -55,24 +59,11 @@ function DraggableQuestionBox({ dragId, question }: { dragId: string, question: 
   )
 }
 
-function DroppableBox({ droppableId, isDraggedOver, children }: { droppableId: string, isDraggedOver: boolean, children: ReactNode }) {
-  const { setNodeRef } = useDroppable({
-    id: droppableId
-  })
-  return (
-    <div ref={setNodeRef} className="min-h-24">
-      { isDraggedOver && <div className="min-h-28"> </div>}
-      {children}
-    </div>
-  )
-}
 
 export default function Questions() {
 
-  const [currentDragOver, setCurrentDragOver] = useState<number | null>(null)
-
-  const [questions, setQuestions] = useState( [
-    "Mark", "John", "Kingsley", "Pope"
+  const [questions, setQuestions] = useState([
+    { id: '1', val: "Mark" }, { id: '2', val: "John" }, { id: '3', val: "Kingsley" }, { id: '4', val: "Pope" }
   ])
 
 
@@ -83,45 +74,57 @@ export default function Questions() {
 
     console.log(result.active.id.toString(), result.over.id.toString())
 
-    setCurrentDragOver(null)
     // const oldIndex = umber(result.active.id.toString().split("-")[1]);
-    // const newIndex = sizeOfSteps - Number(result.over.id.toString().split("-")[1]);
   }
 
   const onDragOverFn = (event: DragOverEvent) => {
     if (!event.over) {
       return;
     }
-    setCurrentDragOver(Number(event.over.id.toString().split("-")[1]))
-
-    // const overIndex = Number(event.over?.id.toString().split("-")[1]) - 1
-    // const dragIndex = Number(event.active.id.toString().split("-")[1]) - 1
-
-    // setQuestions([...questions.slice(0, overIndex), "", ...questions.slice(overIndex + 1)])
+  
+    console.log((Number(event.active.id.toString().split("-")[1]) - 1))
   }
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(TouchSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates
+    })
+  )
+
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) return null;
 
   return (
     <div className="flex flex-col gap-3">
-      <DndContext onDragEnd={onDragEndFn} onDragOver={onDragOverFn}>
-        {
-           questions.map((x, index) => {
-            return (
-              <div>
-                {
-                  x === "" ? <div></div> :
-                  <DroppableBox droppableId={`droppable-${index + 1}`} key={`droppable-${index + 1}`} isDraggedOver={index + 1 === currentDragOver}>
-                  <DraggableQuestionBox
-                    dragId={`dragged-${index + 1}`}
-                    question={x}
-                  />
-                </DroppableBox>
-                }
-              </div>
-            )
-           
-          })
-        }
+      <DndContext collisionDetection={closestCorners} sensors={sensors}>
+        <div>
+          <SortableContext items={questions} strategy={verticalListSortingStrategy}>
+            <div className="flex flex-col gap-4">
+              {
+                questions.map((x, index) => {
+                  return (
+                    <DraggableQuestionBox
+                      dragId={x.id}
+                      question={x.val}
+                      key={`draggable-question-${x.id}`}
+                    />
+                  )
+
+                })
+              }
+            </div>
+
+          </SortableContext>
+        </div>
+
       </DndContext>
-    </div>
+    </div >
   )
 }
