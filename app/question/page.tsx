@@ -2,7 +2,7 @@
 
 import { DraggableIndicatorIcon } from "@/lib/icons/draggable-icon";
 import { DndContext, DragEndEvent, DragOverEvent, KeyboardSensor, PointerSensor, TouchSensor, closestCorners, useSensor, useSensors } from "@dnd-kit/core";
-import { SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from "@dnd-kit/utilities";
 import { Card, CardHeader, Divider, CardBody, CardFooter, Link, Image } from "@nextui-org/react";
 import { ReactNode, useEffect, useState } from "react";
@@ -55,8 +55,8 @@ function DraggableQuestionBox({ dragId, question }: { dragId: string, question: 
           <CardBody>
             <div className="flex flex-row gap-2">
               {mouseInside &&
-                <div className="flex items-center justify-center">
-                  <div {...listeners} {...attributes}>
+                <div className="flex items-center justify-center" {...listeners} {...attributes}>
+                  <div>
                     <DraggableIndicatorIcon size={15} className="cursor-pointer" />
                   </div>
                 </div>
@@ -101,13 +101,17 @@ export default function Questions() {
 
 
   const onDragEndFn = (result: DragEndEvent) => {
-    if (!result.over) {
+    const { over, active } = result;
+    if (!over || over.id === active.id) {
       return;
     }
 
-    console.log(result.active.id.toString(), result.over.id.toString())
+    setQuestions((questions) => {
+      const oldPosition = questions.findIndex(x => x.id === active.id);
+      const newPosition = questions.findIndex(x => x.id === over.id);
 
-    // const oldIndex = umber(result.active.id.toString().split("-")[1]);
+      return arrayMove(questions, oldPosition, newPosition)
+    })
   }
 
   const onDragOverFn = (event: DragOverEvent) => {
@@ -136,7 +140,7 @@ export default function Questions() {
 
   return (
     <div className="flex flex-col gap-3">
-      <DndContext collisionDetection={closestCorners} sensors={sensors}>
+      <DndContext collisionDetection={closestCorners} sensors={sensors} onDragEnd={onDragEndFn}>
         <div>
           <SortableContext items={questions} strategy={verticalListSortingStrategy}>
             <div className="flex flex-col gap-4">
