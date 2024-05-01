@@ -5,7 +5,9 @@ import { DndContext, DragEndEvent, DragOverEvent, KeyboardSensor, PointerSensor,
 import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from "@dnd-kit/utilities";
 import { Card, CardHeader, Divider, CardBody, CardFooter, Link, Image } from "@nextui-org/react";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
+import EditorJS from '@editorjs/editorjs';
+import dynamic from "next/dynamic";
 
 
 
@@ -33,10 +35,6 @@ function DraggableQuestionBox({ dragId, question }: { dragId: string, question: 
 
   return (
     <div className="flex flex-row p-2 px-4">
-      <div className="flex grow">
-
-      </div>
-
       <div ref={setNodeRef} style={style} onMouseEnter={mouseEnter} onMouseLeave={mouseLeave}>
         <Card className="max-w-[400px]">
           {/* <CardHeader >
@@ -92,13 +90,36 @@ function DraggableQuestionBox({ dragId, question }: { dragId: string, question: 
   )
 }
 
+const Editor = dynamic(() => import("./editor"), {
+  ssr: false,
+});
+
+
 
 export default function Questions() {
+
+  // const editorRef = useRef<EditorJS>();
+
+  // useEffect(() => {
+  //   //initialize editor if we don't have a reference
+  //   if (!editorRef.current) {
+  //     const editor = new EditorJS({ holder: "editorId" });
+  //     editorRef.current = editor;
+  //   }
+
+  //   //add a return function handle cleanup
+  //   return () => {
+  //     if (editorRef.current && editorRef.current.destroy) {
+  //       editorRef.current.destroy();
+  //     }
+  //   };
+  // }, []);
+
+
 
   const [questions, setQuestions] = useState([
     { id: '1', val: "Mark" }, { id: '2', val: "John" }, { id: '3', val: "Kingsley" }, { id: '4', val: "Pope" }
   ])
-
 
   const onDragEndFn = (result: DragEndEvent) => {
     const { over, active } = result;
@@ -139,29 +160,34 @@ export default function Questions() {
   if (!isMounted) return null;
 
   return (
-    <div className="flex flex-col gap-3">
-      <DndContext collisionDetection={closestCorners} sensors={sensors} onDragEnd={onDragEndFn}>
-        <div>
-          <SortableContext items={questions} strategy={verticalListSortingStrategy}>
-            <div className="flex flex-col gap-4">
-              {
-                questions.map((x, index) => {
-                  return (
-                    <DraggableQuestionBox
-                      dragId={x.id}
-                      question={x.val}
-                      key={`draggable-question-${x.id}`}
-                    />
-                  )
+    <div className="flex">
+      <div className="flex grow">
+        <Editor holder="editorId"></Editor>
+      </div>
+      <div className="flex flex-col gap-3">
+        <DndContext collisionDetection={closestCorners} sensors={sensors} onDragEnd={onDragEndFn}>
+          <div>
+            <SortableContext items={questions} strategy={verticalListSortingStrategy}>
+              <div className="flex flex-col gap-4">
+                {
+                  questions.map((x, index) => {
+                    return (
+                      <DraggableQuestionBox
+                        dragId={x.id}
+                        question={x.val}
+                        key={`draggable-question-${x.id}`}
+                      />
+                    )
 
-                })
-              }
-            </div>
+                  })
+                }
+              </div>
 
-          </SortableContext>
-        </div>
+            </SortableContext>
+          </div>
 
-      </DndContext>
-    </div >
+        </DndContext>
+      </div>
+    </div>
   )
 }
