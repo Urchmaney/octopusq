@@ -11,6 +11,7 @@ export default function Editor({ holder }: { holder: string }) {
     if (!ref.current) {
       const editor = new EditorJS({
         holder: holder,
+        autofocus: true,
         placeholder: "Write Here"
       });
       ref.current = editor;
@@ -25,5 +26,5 @@ export default function Editor({ holder }: { holder: string }) {
   }, []);
 
 
-  return <div id={holder} className="prose max-w-full" />;
+  return <div id={holder} className="min-w-[900px] w-full" />;
 };
