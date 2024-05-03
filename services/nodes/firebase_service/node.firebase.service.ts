@@ -52,14 +52,26 @@ export class FirestoreService<T> {
   constructor(firebaseApp: FirebaseApp, collectionName: string, suffix: string) {
     this.appFirestore = getFirestore(firebaseApp);
     this.collectionName = collectionName;
-    this.suffix = `${suffix[0].toUpperCase()}${suffix.substring(1).toLowerCase()}`;
+    this.suffix = `${suffix[0].toUpperCase()}${suffix.substring(1)}`;
 
     this.add = this.add.bind(this);
   }
 
-  private async add(val: T): Promise<T | null> {
+  private collectionPath(ids: string[]) : string {
+    let output = "";
+    const splittedName = this.collectionName.split("/");
+    splittedName.forEach((name, index) => {
+      output += `/${name}`;
+      if(ids[index]) {
+        output += `/${ids[index]}`
+      }
+    })
+    return output.substring(1);
+  } 
+
+  private async add(val: T, ids: string[] = []): Promise<T | null> {
     try {
-      const collectionRef = collection(this.appFirestore, this.collectionName).withConverter<Partial<T>, Partial<T>>(this.FIREBASE_CONVERTER)
+      const collectionRef = collection(this.appFirestore, this.collectionPath(ids)).withConverter<Partial<T>, Partial<T>>(this.FIREBASE_CONVERTER);
       const result =  await addDoc(collectionRef, val);
       return { id: result.id, ...val };
     } catch (error) {
@@ -68,9 +80,9 @@ export class FirestoreService<T> {
     }
   }
 
-  private async getAll(): Promise<T[]> {
+  private async getAll(ids: string[] = []): Promise<T[]> {
     try {
-      const collectionRef = collection(this.appFirestore, this.collectionName).withConverter<Partial<T>, Partial<T>>(this.FIREBASE_CONVERTER);
+      const collectionRef = collection(this.appFirestore, this.collectionPath(ids)).withConverter<Partial<T>, Partial<T>>(this.FIREBASE_CONVERTER);
       const snapshot = await getDocs(collectionRef);
       return snapshot.docs.map((x) =>  ({ id: x.id, ...x.data() }) as T);
     }

@@ -8,6 +8,7 @@ import { Card, CardHeader, Divider, CardBody, CardFooter, Link, Image, Input, Bu
 import { ReactNode, useEffect, useRef, useState } from "react";
 import EditorJS from '@editorjs/editorjs';
 import dynamic from "next/dynamic";
+import { useServiceRepo } from "@/contexts/services.repo.context";
 
 
 
@@ -116,6 +117,7 @@ export default function Questions() {
   //   };
   // }, []);
 
+  const { questionService } = useServiceRepo() || {};
 
 
   const [questions, setQuestions] = useState([
@@ -153,9 +155,11 @@ export default function Questions() {
   )
 
 
-  const createQuestion = (e: React.FormEvent<HTMLFormElement>) => {
+  const createQuestion = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log((e.currentTarget.elements[0] as HTMLInputElement).value)
+    const question = (e.currentTarget.elements[0] as HTMLInputElement).value;
+    const added = await questionService?.addProjectQuestion({ body: question }, ["MuvIznC4VQPxBkKtNVKg"]);
+
   }
 
   const [isMounted, setIsMounted] = useState(false);
