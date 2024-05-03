@@ -1,6 +1,6 @@
-import { Question } from "../../models/question.model";
+import { Question } from "../../models/question";
 
-export interface IQuestionService {
+export interface IQuestionServiceInterface {
     getQuestion() : Promise<Question[]>
     addQuestion(question: Question): Promise<Boolean>
 }

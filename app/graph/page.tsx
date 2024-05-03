@@ -11,6 +11,7 @@ import Graph, { Data, Edge, GraphEvents, NetworkEvents, Options, graphData } fro
 import { v4 } from "uuid";
 import { Node } from "@/models/node";
 import React from "react";
+import { useServiceRepo } from "@/contexts/services.repo.context";
 
 
 function GGraph({ graph, options, events}: {  graph: graphData, options: Options, events: GraphEvents | undefined }) {
@@ -39,15 +40,15 @@ export default function Page() {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
 
-  const [actionPoint, setActionPoint] = useState<[number, number]>([300, 200])
+  const [actionPoint, setActionPoint] = useState<[number, number]>([300, 200]);
 
-  const [markDown, setMarkDown] = useState<string | undefined>("**Welcome**")
-  const [markdownEdit, setMarkDownEdit] = useState(false)
+  const [markDown, setMarkDown] = useState<string | undefined>("**Welcome**");
+  const [markdownEdit, setMarkDownEdit] = useState(false);
 
-  const nodeRepoService = useNodeRepoContext();
+  const { nodeService } = useServiceRepo() || {};
 
   useEffect(() => {
-    nodeRepoService?.getNodes().then(data => {
+    nodeService?.getNodes().then(data => {
       setNodes(data);
       const sEdges: Edge[] = data.map(x =>
         x.edges.map((y, i) => ({
@@ -76,7 +77,7 @@ export default function Page() {
 
 
   const addNewNode = () => {
-    nodeRepoService?.addNode({ title: "Untitled", edges: [] }).then(success => {
+    nodeService?.addNode({ title: "Untitled", edges: [] }).then(success => {
       if (success) setNodes([...nodes, { title: "Untitled", edges: [] }]);
     })
   }
