@@ -4,7 +4,7 @@ import { DraggableIndicatorIcon } from "@/lib/icons/draggable-icon";
 import { DndContext, DragEndEvent, DragOverEvent, KeyboardSensor, PointerSensor, TouchSensor, closestCorners, useSensor, useSensors } from "@dnd-kit/core";
 import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from "@dnd-kit/utilities";
-import { Card, CardHeader, Divider, CardBody, CardFooter, Link, Image } from "@nextui-org/react";
+import { Card, CardHeader, Divider, CardBody, CardFooter, Link, Image, Input, Button } from "@nextui-org/react";
 import { ReactNode, useEffect, useRef, useState } from "react";
 import EditorJS from '@editorjs/editorjs';
 import dynamic from "next/dynamic";
@@ -78,8 +78,9 @@ function DraggableQuestionBox({ dragId, question }: { dragId: string, question: 
                 isExternal
                 showAnchorIcon
                 href="#"
+                color="secondary"
               >
-                Sub-question
+                sub-questions
               </Link>
             </div>
           </CardFooter>
@@ -151,6 +152,12 @@ export default function Questions() {
     })
   )
 
+
+  const createQuestion = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    console.log((e.currentTarget.elements[0] as HTMLInputElement).value)
+  }
+
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -165,6 +172,28 @@ export default function Questions() {
         <Editor holder="editorId"></Editor>
       </div>
       <div className="flex flex-col gap-3">
+
+        <div className="px-5">
+          <Card className="max-w-[400px]">
+            <CardBody>
+              <form onSubmit={createQuestion}>
+                <div className="flex flex-col gap-4">
+                  <div className="flex justify-center">
+                    <Input size={"md"} type="text" label="New Question" name="newQuestion" />
+                  </div>
+                  <div className="flex justify-end">
+                    <Button variant="solid" color="secondary" type="submit">
+                      Create
+                    </Button>
+                  </div>
+                </div>
+              </form>
+            </CardBody>
+          </Card>
+        </div>
+
+
+
         <DndContext collisionDetection={closestCorners} sensors={sensors} onDragEnd={onDragEndFn}>
           <div>
             <SortableContext items={questions} strategy={verticalListSortingStrategy}>
