@@ -9,6 +9,7 @@ import { ReactNode, useEffect, useRef, useState } from "react";
 import EditorJS from '@editorjs/editorjs';
 import dynamic from "next/dynamic";
 import { useServiceRepo } from "@/contexts/services.repo.context";
+import { Question } from "@/models/question";
 
 
 
@@ -98,7 +99,7 @@ const Editor = dynamic(() => import("./editor"), {
 
 
 
-export default function Questions() {
+export default function Questions({ params }: { params: { id: string } }) {
 
   // const editorRef = useRef<EditorJS>();
 
@@ -119,10 +120,13 @@ export default function Questions() {
 
   const { questionService } = useServiceRepo() || {};
 
+  const [questions, setQuestions] = useState<Question[]>([]);
 
-  const [questions, setQuestions] = useState([
-    { id: '1', val: "Mark" }, { id: '2', val: "John" }, { id: '3', val: "Kingsley" }, { id: '4', val: "Pope" }
-  ])
+  useEffect(() => {
+    questionService?.getProjectQuestions([params.id]).then((questions: Question[]) => {
+      setQuestions(questions)
+    })
+  }, [])
 
   const onDragEndFn = (result: DragEndEvent) => {
     const { over, active } = result;
@@ -157,9 +161,15 @@ export default function Questions() {
 
   const createQuestion = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const question = (e.currentTarget.elements[0] as HTMLInputElement).value;
-    const added = await questionService?.addProjectQuestion({ body: question }, ["MuvIznC4VQPxBkKtNVKg"]);
-
+    const form = e.currentTarget;
+    const questionElement = (form.elements[0] as HTMLInputElement);
+    const question = questionElement.value;
+    const newQuestion = await questionService?.addProjectQuestion({ body: question }, [params.id]);
+    if (newQuestion) {
+      setQuestions((questions) => [newQuestion, ...questions ]);
+      form.reset();
+      questionElement.value = questionElement.defaultValue;
+    }
   }
 
   const [isMounted, setIsMounted] = useState(false);
@@ -200,14 +210,14 @@ export default function Questions() {
 
         <DndContext collisionDetection={closestCorners} sensors={sensors} onDragEnd={onDragEndFn}>
           <div>
-            <SortableContext items={questions} strategy={verticalListSortingStrategy}>
+            <SortableContext items={questions.map((x) => ({ id: x.id!.toString(), ...x }))} strategy={verticalListSortingStrategy}>
               <div className="flex flex-col gap-4">
                 {
                   questions.map((x, index) => {
                     return (
                       <DraggableQuestionBox
-                        dragId={x.id}
-                        question={x.val}
+                        dragId={x.id!.toString()}
+                        question={x.body}
                         key={`draggable-question-${x.id}`}
                       />
                     )
