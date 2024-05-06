@@ -46,15 +46,16 @@ export class FirestoreService<T> {
 
   private readonly FIREBASE_CONVERTER = {
     fromFirestore: (snap: QueryDocumentSnapshot) => snap.data() as T,
-    toFirestore: (data: Partial<T>) => data
+    toFirestore: (data: T) => data
   }
 
   constructor(firebaseApp: FirebaseApp, collectionName: string, suffix: string) {
     this.appFirestore = getFirestore(firebaseApp);
-    this.collectionName = collectionName;
+    this.collectionName = collectionName || "";
     this.suffix = `${suffix[0].toUpperCase()}${suffix.substring(1)}`;
 
     this.add = this.add.bind(this);
+    this.getAll = this.getAll.bind(this)
   }
 
   private collectionPath(ids: string[]) : string {
@@ -69,13 +70,12 @@ export class FirestoreService<T> {
     return output.substring(1);
   } 
 
-  private async add(val: T, ids: string[] = []): Promise<T | null> {
+  private async add(val: Partial<T>, ids: string[] = []): Promise<T | null> {
     try {
-      const collectionRef = collection(this.appFirestore, this.collectionPath(ids)).withConverter<Partial<T>, Partial<T>>(this.FIREBASE_CONVERTER);
-      const result =  await addDoc(collectionRef, val);
-      return { id: result.id, ...val };
+      const collectionRef = collection(this.appFirestore, this.collectionPath(ids)).withConverter<T, Partial<T>>(this.FIREBASE_CONVERTER);
+      const result =  await addDoc(collectionRef, val as T);
+      return { id: result.id, ...val } as T;
     } catch (error) {
-      console.log(error)
       return null;
     }
   }
