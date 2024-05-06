@@ -1,6 +1,6 @@
 import { Question } from "../../models/question";
 
 export interface IQuestionServiceInterface {
-    getQuestion() : Promise<Question[]>
-    addQuestion(question: Question): Promise<Boolean>
+    getProjectQuestions() : Promise<Question[]>
+    addProjectQuestion(question: Question, projectId: string[]): Promise<Boolean>
 }
