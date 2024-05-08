@@ -10,6 +10,7 @@ import EditorJS from '@editorjs/editorjs';
 import dynamic from "next/dynamic";
 import { useServiceRepo } from "@/contexts/services.repo.context";
 import { Question } from "@/models/question";
+import { useAppData } from "@/contexts/data.context";
 
 
 
@@ -37,8 +38,8 @@ function DraggableQuestionBox({ dragId, question }: { dragId: string, question: 
 
   return (
     <div className="flex flex-row p-2 px-4">
-      <div ref={setNodeRef} style={style} onMouseEnter={mouseEnter} onMouseLeave={mouseLeave}>
-        <Card className="max-w-[400px]">
+      <div ref={setNodeRef} style={style}>
+        <Card className="max-w-[400px] min-w-[350px]">
           {/* <CardHeader >
           <div className="flex gap-3 bg-secondary-50">
             <div {...listeners} {...attributes}>
@@ -53,7 +54,7 @@ function DraggableQuestionBox({ dragId, question }: { dragId: string, question: 
         </CardHeader> */}
 
           <CardBody>
-            <div className="flex flex-row gap-2">
+            <div className="flex flex-row gap-2 w-full" onMouseEnter={mouseEnter} onMouseLeave={mouseLeave}>
               {mouseInside &&
                 <div className="flex items-center justify-center" {...listeners} {...attributes}>
                   <div>
@@ -61,13 +62,13 @@ function DraggableQuestionBox({ dragId, question }: { dragId: string, question: 
                   </div>
                 </div>
               }
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-3 flex-grow">
                 <div className="flex bg-[#F2F3F5] p-3 rounded">
                   <p className="text-md">{question}</p>
                 </div>
 
                 <p className="text-small text-default-500">Answer</p>
-                <p>Make beautiful websites regardless of your design experience.</p>
+                {/* <p>Make beautiful websites regardless of your design experience.</p> */}
               </div>
 
             </div>
@@ -117,6 +118,8 @@ export default function Questions({ params }: { params: { id: string } }) {
   //     }
   //   };
   // }, []);
+
+  const { activeProject } = useAppData();
 
   const { questionService } = useServiceRepo() || {};
 
@@ -182,13 +185,16 @@ export default function Questions({ params }: { params: { id: string } }) {
 
   return (
     <div className="flex">
-      <div className="flex grow">
+      <div className="flex grow flex-col">
+        <p className="flex justify-center text-lg font-bold p-4">
+          { activeProject?.title }
+        </p>
         <Editor holder="editorId"></Editor>
       </div>
       <div className="flex flex-col gap-3">
 
         <div className="px-5">
-          <Card className="max-w-[400px]">
+          <Card className="max-w-[400px] w-[350px]">
             <CardBody>
               <form onSubmit={createQuestion}>
                 <div className="flex flex-col gap-4">

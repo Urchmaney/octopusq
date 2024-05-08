@@ -1,4 +1,5 @@
 "use client"
+import { useAppData } from "@/contexts/data.context";
 import { useServiceRepo } from "@/contexts/services.repo.context";
 import { AddIcon } from "@/lib/icons/add";
 import { Project } from "@/models/project";
@@ -12,6 +13,7 @@ export default function Projects() {
   const { projectService } = useServiceRepo() || {};
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const router = useRouter();
+  const { setActiveProject } = useAppData();
 
   const openNewProjectModal = () => {
     onOpen();
@@ -26,6 +28,11 @@ export default function Projects() {
     }
   }
 
+  const clickOpenProject = (project: Project) => {
+    router.push(`projects/${project.id}/questions`);
+    setActiveProject?.(project);
+  }
+
   useEffect(() => {
     projectService?.getProjects().then((projs: Project[]) => {
       setProjects(projs)
@@ -37,7 +44,7 @@ export default function Projects() {
       <div className="flex justify-start flex-wrap gap-8 pt-14">
         {
           projects.map(x => (
-            <div className="flex justify-center items-center w-[30%] bg-gray-200 h-[290px] rounded-md cursor-pointer" key={`projects-${x.id}`} onClick={() => router.push(`projects/${x.id}/questions`)}>
+            <div className="flex justify-center items-center w-[30%] bg-gray-200 h-[290px] rounded-md cursor-pointer" key={`projects-${x.id}`} onClick={() => clickOpenProject(x)}>
               <Link className="text-xl text-black" href={`projects/${x.id}/questions`}>{x.title}</Link>
             </div>
           ))

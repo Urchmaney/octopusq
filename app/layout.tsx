@@ -20,7 +20,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.className} bg-no-repeat min-h-dvh bg-white`} >
 
-        <Script id="chatbot">
+        {/* <Script id="chatbot">
           {
             `(function (w, d, s, o, f, js, fjs) {
             w['MyWidget'] = o; w[o] = w[o] || function () {(w[o].q = w[o].q || []).push(arguments)};
@@ -29,7 +29,7 @@ export default function RootLayout({
     }(window, document, 'script', 'mw', 'https://res.cloudinary.com/garhia/raw/upload/v1/heedbase/heedbase-widget.js'));
           mw('init', {botId: "08ca426357e14d67b33df4c4c506c502" });`
           }
-        </Script>
+        </Script> */}
         <Providers>
           <main>
             {children}
