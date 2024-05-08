@@ -8,9 +8,7 @@ type AppData = {
 
 export const DataContext: React.Context<AppData> = React.createContext<AppData>({
   activeProject: null,
-  setActiveProject(project) {
-    
-  }
+  setActiveProject: (project: Project) => {}
 });
 
 export const useAppData = () => React.useContext(DataContext);
