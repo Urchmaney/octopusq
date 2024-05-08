@@ -20,7 +20,6 @@ export const AppDataContextProvider = (
   const [project, setProject] = useState<Project | null>(null);
 
   const setActiveProject = (project: Project) => {
-    console.log(project, "==========")
     setProject(project)
   }
 
