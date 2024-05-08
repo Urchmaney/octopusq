@@ -29,8 +29,8 @@ export default function Projects() {
   }
 
   const clickOpenProject = (project: Project) => {
-    router.push(`projects/${project.id}/questions`);
     setActiveProject?.(project);
+    router.push(`projects/${project.id}/questions`);
   }
 
   useEffect(() => {
@@ -45,7 +45,7 @@ export default function Projects() {
         {
           projects.map(x => (
             <div className="flex justify-center items-center w-[30%] bg-gray-200 h-[290px] rounded-md cursor-pointer" key={`projects-${x.id}`} onClick={() => clickOpenProject(x)}>
-              <Link className="text-xl text-black" href={`projects/${x.id}/questions`}>{x.title}</Link>
+              <p className="text-xl text-black">{x.title}</p>
             </div>
           ))
         }

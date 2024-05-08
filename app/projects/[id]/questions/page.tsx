@@ -37,7 +37,7 @@ function DraggableQuestionBox({ dragId, question }: { dragId: string, question: 
   }
 
   return (
-    <div className="flex flex-row p-2 px-4">
+    <div className="flex flex-row p-2 px-4 justify-end">
       <div ref={setNodeRef} style={style}>
         <Card className="max-w-[400px] min-w-[350px]">
           {/* <CardHeader >
