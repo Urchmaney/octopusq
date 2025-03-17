@@ -1,15 +1,15 @@
-import { BaseSyntheticEvent, MouseEventHandler, useEffect, useRef, useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { useEffect, useRef, useState } from 'react'
+// import reactLogo from './assets/react.svg'
+// import viteLogo from '/vite.svg'
 import './App.css'
 
-const coordinates: Array<[number, number]> = [
-  [175, 252],
-  [512, 436],
-  [235, 44],
-  [295, 725],
-  [1000, 44]
-]
+// const coordinates: Array<[number, number]> = [
+//   [175, 252],
+//   [512, 436],
+//   [235, 44],
+//   [295, 725],
+//   [1000, 44]
+// ]
 
 
 const xcoordinates: Array<[number, number]> = [[306, 411], [413, 549]]
@@ -27,13 +27,13 @@ function rectContains(canvas: HTMLCanvasElement | null, point: [number, number])
 
 const ZOOM_SPEED = 0.1;
 
-function toScreenCoords(x: number, y: number, scale: number, scrollElement: HTMLElement | null, canvas: HTMLCanvasElement | null): [number, number] {
-  if (!scrollElement || !canvas) return [0, 0]
-  var rect = canvas.getBoundingClientRect();
-  let wx = x * scale + rect.left + scrollElement.scrollLeft;
-  let wy = y * scale + rect.top + scrollElement.scrollTop;
-  return [wx, wy];
-}
+// function toScreenCoords(x: number, y: number, scale: number, scrollElement: HTMLElement | null, canvas: HTMLCanvasElement | null): [number, number] {
+//   if (!scrollElement || !canvas) return [0, 0]
+//   var rect = canvas.getBoundingClientRect();
+//   let wx = x * scale + rect.left + scrollElement.scrollLeft;
+//   let wy = y * scale + rect.top + scrollElement.scrollTop;
+//   return [wx, wy];
+// }
 
 function toCanvasCoords(canvas: HTMLCanvasElement | null, pageX: number, pageY: number, scale: number): [number, number] {
   if (!canvas) return [0, 0];
@@ -58,7 +58,7 @@ function App() {
   }, [canvas.current]);
 
   const [scale, setScale] = useState<number>(.5)
-  const [mouseCoordinate, setMouseCoordinate] = useState<[number, number]>([0, 0])
+  const [_, setMouseCoordinate] = useState<[number, number]>([0, 0])
 
   
   const handleScroll = (e: React.WheelEvent) => {
