@@ -3,6 +3,7 @@
 })(this, function(react) {
   "use strict";
   function App() {
+    console.log(react);
     const [count, setCount] = react.useState(0);
     return /* @__PURE__ */ react.createElement("div", null, /* @__PURE__ */ react.createElement("h1", null, "Vite + React"), /* @__PURE__ */ react.createElement("div", { className: "card" }, /* @__PURE__ */ react.createElement("button", { onClick: () => setCount((count2) => count2 + 1) }, "count is ", count), /* @__PURE__ */ react.createElement("p", null, "Edit ", /* @__PURE__ */ react.createElement("code", null, "src/App.tsx"), " and save to test HMR")), /* @__PURE__ */ react.createElement("p", { className: "read-the-docs" }, "Click on the Vite and React logos to learn more"));
   }
