@@ -1,4 +1,6 @@
+import clsx, { ClassValue } from "clsx";
 import { Point, Rect } from "./core";
+import { twMerge } from "tailwind-merge";
 
 export function toScreenCoords(x: number, y: number, scale: number, scrollElement: HTMLElement | null, canvas: HTMLCanvasElement | null): [number, number] {
   if (!scrollElement || !canvas) return [0, 0]
@@ -21,4 +23,9 @@ export function toCanvasCoords(canvas: HTMLCanvasElement | null, pageX: number, 
 export function canvasRect(canvas: HTMLCanvasElement): Rect {
   const rect = canvas.getBoundingClientRect();
   return new Rect(rect.x, rect.y, rect.width, rect.height)
+}
+
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
 }
