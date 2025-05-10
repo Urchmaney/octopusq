@@ -1,11 +1,10 @@
+import { RouterProvider } from 'react-router';
 import './App.css';
-import { Workspace } from './components/workspace/Workspace';
+import router from './app/routes';
 
 function App() {
   return (
-    <Workspace> 
-      <p>Show me love</p>
-    </Workspace>
+    <RouterProvider router={router} />
   )
 }
 
