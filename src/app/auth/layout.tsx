@@ -1,6 +1,3 @@
-
-// import { EyeIcon, EyeOffIcon } from "lucide-react"
-
 import { Link, Outlet } from "react-router"
 import { Card, CardHeader } from "../../components"
 import journeyImg from "../../assets/journey.jpg";
