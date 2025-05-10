@@ -1,44 +1,38 @@
-import { useState } from "react"
-import { CardContent, Input } from "../../components"
-import { EyeIcon, EyeOffIcon } from "lucide-react"
+import { CardContent, Input, PasswordInput } from "../../components"
 import { Link } from "react-router"
+import { useFetcherSumbit } from "../../hooks/useFetcherSubmit";
 
 export function Login() {
-  const [showPassword, setShowPassword] = useState(false)
+  const { fetcher, errors, busy } = useFetcherSumbit();
 
   return (
     <CardContent className="space-y-6 pb-6">
-      <form className="space-y-4">
+      {errors?.length > 0 &&
+        <ul className="mt-3 list-disc px-2">
+          {
+            errors?.map((x, i) => (
+              <li key={`register_error_${i}`} className="text-red-500 text-sm">{x}</li>
+            ))
+          }
+        </ul>}
+      <fetcher.Form className="space-y-4" action="/auth/login" method="post">
         <div>
           <Input
             name="email"
-            type="text"
+            type="email"
             placeholder="Username or email"
-            defaultValue="Mahisa Dyan Diptya"
             className="border-0 border-b border-gray-200 bg-transparent px-0 py-2 focus-visible:border-[#1a4b53] focus-visible:ring-0"
           />
         </div>
 
-        <div className="relative">
-          <Input
-            name="password"
-            type={showPassword ? "text" : "password"}
-            placeholder="Enter your password"
-            className="border-0 border-b border-gray-200 bg-transparent px-0 py-2 focus-visible:border-[#1a4b53] focus-visible:ring-0"
-          />
-          <button
-            type="button"
-            className="absolute right-0 top-2 text-gray-400 hover:text-gray-600"
-            onClick={() => setShowPassword(!showPassword)}
-          >
-            {showPassword ? <EyeOffIcon size={20} /> : <EyeIcon size={20} />}
-          </button>
+        <div>
+          <PasswordInput />
         </div>
 
         <button type="submit" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 text-primary-foreground h-10 px-4 mt-6 w-full bg-[#1a4b53] py-6 text-white hover:bg-[#15393f]">
-          SIGN IN
+          {busy ? "SIGNING IN..." : "SIGN IN"}
         </button>
-      </form>
+      </fetcher.Form >
       <div className="text-center">
         <p className="text-sm text-gray-600">
           Don&apos;t have an account yet?{" "}

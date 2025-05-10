@@ -1,5 +1,6 @@
-import { RefObject } from "react";
+import { RefObject, useState } from "react";
 import { cn } from "../../utils"
+import { EyeIcon, EyeOffIcon } from "lucide-react";
 
 
 export function Input(props: React.ComponentProps<"input"> & { ref?: RefObject<HTMLInputElement> }) {
@@ -19,4 +20,26 @@ export function Input(props: React.ComponentProps<"input"> & { ref?: RefObject<H
 }
 
 Input.displayName = "Input"
+
+export function PasswordInput() {
+  const [showPassword, setShowPassword] = useState(false);
+  
+  return (
+    <div className="relative">
+      <Input
+        name="password"
+        type={showPassword ? "text" : "password"}
+        placeholder="Create password"
+        className="border-0 border-b border-gray-200 bg-transparent px-0 py-2 focus-visible:border-[#1a4b53] focus-visible:ring-0"
+      />
+      <button
+        type="button"
+        className="absolute right-0 top-2 text-gray-400 hover:text-gray-600"
+        onClick={() => setShowPassword(!showPassword)}
+      >
+        {showPassword ? <EyeOffIcon size={20} /> : <EyeIcon size={20} />}
+      </button>
+    </div>
+  )
+}
 
