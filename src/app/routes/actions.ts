@@ -1,5 +1,5 @@
 import { ActionFunctionArgs, redirect } from "react-router";
-import { login, register } from "../../services";
+import { login, logout, register } from "../../services";
 import { AxiosError } from "axios";
 
 function handleError(error: unknown) {
@@ -31,6 +31,16 @@ export async function registerAction({ request }: ActionFunctionArgs) {
     return redirect("/dashboard");
   } catch (e) {
     return handleError(e);
+  }
+}
+
+export async function dashboardAction({ request }: ActionFunctionArgs) {
+  const actionType = (await request.formData()).get("action_type");
+  switch(actionType) {
+    case "logout":
+      await logout();
+      return redirect("/auth/login");
+    default:
   }
 }
 

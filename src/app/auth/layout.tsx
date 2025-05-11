@@ -6,7 +6,7 @@ export function AuthLayout() {
   return (
     <div className="flex min-h-screen">
       {/* Left side with illustration */}
-      <div className="relative hidden w-1/2 bg-[#236983] lg:block">
+      <div className="relative hidden w-1/2 bg-primary lg:block">
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="relative h-[400px] w-[600px]">
             <img

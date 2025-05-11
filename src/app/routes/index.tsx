@@ -2,8 +2,9 @@ import { createBrowserRouter } from "react-router";
 import { AuthLayout, Login, Register } from "../auth";
 import { Workspace } from "../../components";
 import { Dashboard } from "../dashboard";
-import { loginAction, registerAction } from "./actions";
+import { dashboardAction, loginAction, registerAction } from "./actions";
 import { dashboardLoader } from "./loaders";
+import { DashboardLayout } from "../dashboard/layout";
 
 export default createBrowserRouter([
   {
@@ -33,9 +34,16 @@ export default createBrowserRouter([
   },
   {
     path: "dashboard",
-    Component: Dashboard,
-    hydrateFallbackElement: <>loading</>,
-    loader: dashboardLoader
+    Component: DashboardLayout,
+    action: dashboardAction,
+    children: [
+      {
+        path: "",
+        Component: Dashboard,
+        hydrateFallbackElement: <>loading</>,
+        loader: dashboardLoader
+      }
+    ]
   }
 ]);
 
