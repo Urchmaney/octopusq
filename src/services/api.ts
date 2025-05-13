@@ -31,3 +31,11 @@ export async function register(email_address: string, password: string, full_nam
 export async function userProfile() {
   return instance.get("/users", { withCredentials: true })
 }
+
+export async function userWorkspaces() {
+  return instance.get("/users/workspaces", { withCredentials: true })
+}
+
+export async function createUserWorkspace(name: string) {
+  return instance.post("/users/workspaces", { workspace: { name } }, { withCredentials: true })
+}

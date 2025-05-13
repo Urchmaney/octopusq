@@ -1,10 +1,9 @@
 import { createBrowserRouter } from "react-router";
 import { AuthLayout, Login, Register } from "../auth";
 import { Workspace } from "../../components";
-import { Dashboard } from "../dashboard";
-import { dashboardAction, loginAction, registerAction } from "./actions";
-import { dashboardLoader } from "./loaders";
-import { DashboardLayout } from "../dashboard/layout";
+import { Dashboard, Projects, WorkspaceLayout } from "../workspace";
+import { WorkspaceAction, loginAction, registerAction } from "./actions";
+import { WorkspaceLoader } from "./loaders";
 
 export default createBrowserRouter([
   {
@@ -33,16 +32,26 @@ export default createBrowserRouter([
     ]
   },
   {
-    path: "dashboard",
-    Component: DashboardLayout,
-    action: dashboardAction,
+    path: "workspaces/:workspaceId?",
+    Component: WorkspaceLayout,
+    action: WorkspaceAction,
+    loader: WorkspaceLoader,
     children: [
       {
-        path: "",
+        index: true,
         Component: Dashboard,
-        hydrateFallbackElement: <>loading</>,
-        loader: dashboardLoader
-      }
+        hydrateFallbackElement: <>loading</>
+      },
+      {
+        path: "dashboard",
+        Component: Dashboard,
+        hydrateFallbackElement: <>loading</>
+      },
+      {
+        path: "projects",
+        Component: Projects,
+        hydrateFallbackElement: <>loading</>
+      },
     ]
   }
 ]);
