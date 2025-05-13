@@ -1,5 +1,5 @@
 import { Bell, UserCircle, ChevronDown, ChevronUp } from "lucide-react";
-import { RefObject, useEffect, useRef, useState } from "react";
+import { RefObject, useEffect, useState } from "react";
 import { Form, Outlet, useLoaderData, useNavigate, useParams } from "react-router";
 import { useClickOutside, useFetcherSumbit, type WorkspaceContext } from "../../hooks";
 import Modal from "../../components/modal/Modal";
