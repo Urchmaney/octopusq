@@ -1,7 +1,7 @@
-import { RefObject } from "react"
+import { ComponentProps, RefObject } from "react"
 import { cn } from "../../utils"
 
-export function Card(props: React.ComponentProps<"div"> & { ref?: RefObject<HTMLDivElement> }) {
+export function Card(props: ComponentProps<"div"> & { ref?: RefObject<HTMLDivElement> }) {
   const { className, ref, ...others } = props;
   return (
     <div
@@ -16,7 +16,7 @@ export function Card(props: React.ComponentProps<"div"> & { ref?: RefObject<HTML
 }
 Card.displayName = "Card"
 
-export function CardHeader(props: React.ComponentProps<"div"> & { ref?: RefObject<HTMLDivElement> }) {
+export function CardHeader(props: ComponentProps<"div"> & { ref?: RefObject<HTMLDivElement> }) {
   const { className, ref, ...others } = props;
   return (
     <div
@@ -28,7 +28,7 @@ export function CardHeader(props: React.ComponentProps<"div"> & { ref?: RefObjec
 }
 CardHeader.displayName = "CardHeader"
 
-export function CardTitle(props: React.ComponentProps<"div"> & { ref?: RefObject<HTMLDivElement> }) {
+export function CardTitle(props: ComponentProps<"div"> & { ref?: RefObject<HTMLDivElement> }) {
   const { className, ref, ...others } = props;
   return (
     <div
@@ -43,7 +43,7 @@ export function CardTitle(props: React.ComponentProps<"div"> & { ref?: RefObject
 }
 CardTitle.displayName = "CardTitle"
 
-export function CardDescription(props: React.ComponentProps<"div"> & { ref?: RefObject<HTMLDivElement> }) {
+export function CardDescription(props: ComponentProps<"div"> & { ref?: RefObject<HTMLDivElement> }) {
   const { className, ref, ...others } = props;
   return (
     <div
@@ -55,7 +55,7 @@ export function CardDescription(props: React.ComponentProps<"div"> & { ref?: Ref
 }
 CardDescription.displayName = "CardDescription"
 
-export function CardContent(props: React.ComponentProps<"div"> & { ref?: RefObject<HTMLDivElement> }) {
+export function CardContent(props: ComponentProps<"div"> & { ref?: RefObject<HTMLDivElement> }) {
   const { className, ref, ...others } = props;
   return (
     <div ref={ref} className={cn("p-6 pt-0", className)} {...others} />
@@ -64,7 +64,7 @@ export function CardContent(props: React.ComponentProps<"div"> & { ref?: RefObje
 CardContent.displayName = "CardContent"
 
 
-export function CardFooter(props: React.ComponentProps<"div"> & { ref?: RefObject<HTMLDivElement> }) {
+export function CardFooter(props: ComponentProps<"div"> & { ref?: RefObject<HTMLDivElement> }) {
   const { className, ref, ...others } = props;
   return (
     <div ref={ref} className={cn("flex items-center p-6 pt-0", className)} {...others} />
