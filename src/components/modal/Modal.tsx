@@ -5,7 +5,7 @@ interface ModalProps {
   onClose: () => void
 }
 
-export default function Modal({ onClose, children }: PropsWithChildren<ModalProps>) {
+export function Modal({ onClose, children }: PropsWithChildren<ModalProps>) {
   const ref = useClickOutside(onClose)
 
   return (
