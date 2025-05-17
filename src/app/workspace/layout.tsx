@@ -1,43 +1,37 @@
 import { Bell, UserCircle, ChevronDown, ChevronUp } from "lucide-react";
 import { RefObject, useEffect, useState } from "react";
-import { Form, Outlet, useLoaderData, useNavigate, useParams } from "react-router";
+import { Form, Outlet, useLoaderData, useMatch, useNavigate, useParams } from "react-router";
 import { useClickOutside, useFetcherSumbit, type WorkspaceContext } from "../../hooks";
 import { Input, SecondaryButton, Modal } from "../../components";
 
 const navLinks = [
-  { label: "Dashboard", path: "/workspaces/dashboards" },
-  { label: "Project", path: "/workspaces/projects" },
-  { label: "My Task", path: "/workspaces/tasks" },
-  // { label: "Activity", path: "/workspaces/activities" },
-  // { label: "Team", path: "/workspaces/" },
-  // { label: "Messages", path: "/workspaces/" },
-  { label: "Settings", path: "/workspaces/" }
+  { label: "Dashboard", path: (workspaceId: string) => `/workspaces/${workspaceId}/dashboard/`, pattern: "/workspaces/:workspaceId?/dashboard?" },
+  { label: "Project", path: (workspaceId: string) => `/workspaces/${workspaceId}/projects/`, pattern: "/workspaces/:workspaceId?/projects" },
+  { label: "My Task", path: (workspaceId: string) => `/workspaces/${workspaceId}/tasks/`, pattern: "/workspaces/:workspaceId?/tasks" },
+  { label: "Settings", path: (workspaceId: string) => `/workspaces/${workspaceId}/settings/`, pattern: "/workspaces/:workspaceId?/settings" },
 ];
 
 type Workspace = { id: number, name: string };
 type User = { email: string, fullName: string };
 
 export const WorkspaceLayout = () => {
+  const navigate = useNavigate();
   const { user, workspaces } = useLoaderData() as { user: User, workspaces: Workspace[] };
   const { workspaceId } = useParams();
-  const navigate = useNavigate();
-  const { fetcher, busy } = useFetcherSumbit();
+  const { fetcher, busy, data } = useFetcherSumbit();
 
-  const [activeNavLink, setActiveNavLink] = useState(0);
+
   const [activeWorkspace, setActiveWorkspace] = useState<Workspace>(workspaces.find(x => x.id === Number(workspaceId)) || workspaces[0]);
   const [createWorkspace, setCreateWorkspace] = useState<boolean>(false);
 
-  const clickNavLink = (index: number, navUrl: string) => {
-    setActiveNavLink(index);
-    navigate(navUrl);
-  }
 
   useEffect(() => {
-    if (workspaceId || workspaces.length <= 0) return;
-
-    setActiveWorkspace(workspaces[workspaces.length - 1]);
-    setCreateWorkspace(false);
-  }, [workspaces.length]);
+    if (data) {
+      setCreateWorkspace(false);
+      setActiveWorkspace(data)
+      navigate(navLinks[0].path(data.id), { replace: true });
+    }
+  }, [data]);
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -49,7 +43,7 @@ export const WorkspaceLayout = () => {
         <nav className="flex-1 px-4 py-6 space-y-4 text-sm">
           <div className="space-y-2">
             {
-              navLinks.map((x, i) => (<NavItem key={`menu_nav_link_${i}`} label={x.label} active={i === activeNavLink} onClick={() => clickNavLink(i, x.path)} />))
+              navLinks.map((x, i) => (<NavItem key={`menu_nav_link_${i}`} label={x.label} pattern={x.pattern} path={x.path(`${(activeWorkspace?.id || 0).toString()}`)} />))
             }
           </div>
         </nav>
@@ -82,7 +76,7 @@ export const WorkspaceLayout = () => {
                 <div className="py-1" role="none">
                   {/* <!-- Active: "bg-gray-100 text-gray-900 outline-hidden", Not Active: "text-gray-700" --> */}
                   <a href="#" className="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabIndex={-1} id="menu-item-0">Account settings</a>
-                  <Form method="post" action={`/workspaces/${activeWorkspace.id}`}>
+                  <Form method="post" action={`/workspaces/${activeWorkspace?.id}`}>
                     <input type="hidden" name="action_type" value={"logout"} />
                     <button type="submit" className="block cursor-pointer w-full px-4 py-2 text-left text-sm text-gray-700 bg-red-500 rounded-2xl" role="menuitem" tabIndex={-1}>Sign out</button>
                   </Form>
@@ -94,15 +88,15 @@ export const WorkspaceLayout = () => {
         </header>
 
         {/* Content Area */}
-        <main className="flex-1 p-6 overflow-y-auto">
-          <Outlet context={{ activeWorkspace: activeWorkspace.id } satisfies WorkspaceContext} />
+        <main className="flex-1 p-4 overflow-y-auto">
+          <Outlet context={{ activeWorkspace: activeWorkspace?.id } satisfies WorkspaceContext} />
         </main>
       </div>
       {
         createWorkspace &&
         <Modal onClose={() => setCreateWorkspace(false)}>
           <div>
-            <fetcher.Form className="flex flex-col gap-5" action={`/workspaces/${activeWorkspace.id}`} method="post">
+            <fetcher.Form className="flex flex-col gap-5" action={`/workspaces/${activeWorkspace?.id}`} method="post">
               <input type="hidden" name="action_type" value={"create_workspace"} />
               <div>
                 <Input
@@ -126,14 +120,18 @@ export const WorkspaceLayout = () => {
   );
 };
 
-const NavItem = ({ label, active = false, onClick = () => { } }: { label: string, active?: boolean, onClick?: () => void }) => (
-  <div
-    onClick={onClick}
-    className={`px-3 py-2 rounded-lg cursor-pointer ${active ? "bg-white text-[#2D007A] font-semibold" : "hover:bg-white/10 text-amber-50"}`}
-  >
-    {label}
-  </div>
-)
+const NavItem = ({ label, path, pattern }: { label: string, path: string, pattern: string }) => {
+  const active = useMatch(pattern);
+  const navigate = useNavigate();
+  return (
+    <div
+      onClick={() => navigate(path)}
+      className={`px-3 py-2 rounded-lg cursor-pointer ${active ? "bg-white text-[#2D007A] font-semibold" : "hover:bg-white/10 text-amber-50"}`}
+    >
+      {label}
+    </div>
+  )
+}
 
 function Workspace({ workspaces, activeWorkspace, onClickWorkspace, onCreateWorkspace }: { workspaces: { id: number, name: string }[], activeWorkspace: { id: number, name: string } | undefined, onCreateWorkspace: () => void, onClickWorkspace: (workspace: Workspace) => void }) {
   const [showMenu, setShowMenu] = useState<boolean>(false);

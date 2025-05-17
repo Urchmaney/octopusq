@@ -38,11 +38,6 @@ export default createBrowserRouter([
     loader: WorkspaceLoader,
     children: [
       {
-        index: true,
-        Component: Dashboard,
-        hydrateFallbackElement: <>loading</>
-      },
-      {
         path: "dashboard",
         Component: Dashboard,
         hydrateFallbackElement: <>loading</>
@@ -50,6 +45,11 @@ export default createBrowserRouter([
       {
         path: "projects",
         Component: Projects,
+        hydrateFallbackElement: <>loading</>
+      },
+      {
+        index: true,
+        Component: Dashboard,
         hydrateFallbackElement: <>loading</>
       },
     ]

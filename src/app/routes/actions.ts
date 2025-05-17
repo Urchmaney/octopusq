@@ -44,9 +44,8 @@ export async function WorkspaceAction({ request }: ActionFunctionArgs) {
     case "create_workspace":
       try {
         const result = await createUserWorkspace(formData.get("workspace_name") as string);
-        return result.data;
+        return { data: result.data };
       }catch(e) {
-        console.log(e)
         return handleError(e);
       }
     default:
