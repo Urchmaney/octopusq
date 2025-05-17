@@ -2,11 +2,12 @@ import { FetcherWithComponents, useFetcher } from "react-router";
 
 export function useFetcherSumbit() {
   const fetcher = useFetcher();
-  const { errors } =  fetcher.data || { errors: [] } as { errors: string[] };
+  const { errors, data } =  fetcher.data || { errors: [], data: null } as { errors: string[], data: any };
 
   return {
     fetcher,
     busy: fetcher.state !== "idle",
-    errors
-  } as { errors: string[], busy: boolean, fetcher: FetcherWithComponents<any> }
+    errors,
+    data
+  } as { errors: string[], busy: boolean, fetcher: FetcherWithComponents<any>, data: any }
 }
