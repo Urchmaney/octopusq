@@ -88,7 +88,7 @@ export const WorkspaceLayout = () => {
         </header>
 
         {/* Content Area */}
-        <main className="flex-1 p-4 overflow-y-auto">
+        <main className="flex-1 p-2 overflow-y-auto">
           <Outlet context={{ activeWorkspace: activeWorkspace?.id } satisfies WorkspaceContext} />
         </main>
       </div>
@@ -112,7 +112,7 @@ export const WorkspaceLayout = () => {
                   {busy ? "Creating..." : "Create Workspace"}
                 </SecondaryButton>
               </div>
-            </fetcher.Form >
+            </fetcher.Form>
           </div>
         </Modal>
       }
