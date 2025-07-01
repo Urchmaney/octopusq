@@ -4,7 +4,7 @@ import { Menu } from "@mantine/core";
 import { Node } from "@tiptap/core";
 
 import { Plugin } from "prosemirror-state";
-import { MdArrowDropDown, MdCancel, MdCheckCircle, MdError, MdInfo } from "react-icons/md";
+import { MdArrowDropDown, MdCancel, MdCheckCircle, MdError } from "react-icons/md";
 
 // import "./styles.css";
 const cements = [
