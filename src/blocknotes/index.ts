@@ -1,11 +1,12 @@
 import { BlockNoteSchema, defaultBlockSpecs } from "@blocknote/core";
-import { Alert } from "./alert";
+import { Cement, CementRulesSpec } from "./cement";
 
 export const schema = BlockNoteSchema.create({
-    blockSpecs: {
-      // Adds all default blocks.
-      ...defaultBlockSpecs,
-      // Adds the Alert block.
-      alert: Alert,
-    },
-  });
+  blockSpecs: {
+    // Adds all default blocks.
+    ...defaultBlockSpecs,
+    cementRules: CementRulesSpec,
+    cement: Cement,
+
+  },
+});
