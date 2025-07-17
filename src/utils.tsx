@@ -29,3 +29,15 @@ export function canvasRect(canvas: HTMLCanvasElement): Rect {
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
+
+export function debounce(fn: Function, delay: number) {
+  let timeoutId: ReturnType<typeof setTimeout>;
+  return (...args: any) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+      fn(...args);
+    }, delay);
+  };
+}
+
+export const consoleDebounce = debounce(console.log, 5000)
