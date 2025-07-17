@@ -2,8 +2,6 @@ import { BlockInfo, createBlockSpecFromStronglyTypedTiptapNode, defaultProps, ge
 import { createReactBlockSpec } from "@blocknote/react";
 import { Menu } from "@mantine/core";
 import { Node } from "@tiptap/core";
-
-
 import { Plugin } from "prosemirror-state";
 import { Decoration, DecorationSet } from "prosemirror-view";
 import { MdArrowDropDown, MdCancel, MdCheckCircle, MdError } from "react-icons/md";
