@@ -1,4 +1,4 @@
-import { collection, doc, DocumentSnapshot, getDoc, updateDoc } from "firebase/firestore/lite";
+import { doc, DocumentSnapshot, getDoc, updateDoc } from "firebase/firestore/lite";
 import { firestoreDb } from "./firebase";
 
 export interface TDocument {

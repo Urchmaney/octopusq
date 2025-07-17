@@ -1,4 +1,4 @@
-import { BlockNoteEditor, BlocksChanged, BlockSchemaFromSpecs, InlineContentSchema, InlineContentSchemaFromSpecs, PartialBlock, StyleSchema, StyleSchemaFromSpecs } from "@blocknote/core";
+import { BlockNoteEditor, BlocksChanged, BlockSchemaFromSpecs, InlineContentSchema, PartialBlock, StyleSchema } from "@blocknote/core";
 import { debounce } from "../utils";
 import { schema } from "../blocknotes";
 import { DocumentAPI, firebaseDocumentAPI } from "../services/documentApi";

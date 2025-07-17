@@ -20,7 +20,7 @@ const getCustomSlashMenuItems = (
 export function Editor({ documentId }:{ documentId: string }) {
   const [loading, setLoading] = useState(false);
   const [docEditor, setDocEditor] = useState<DocumentEditor | null>(null);
-  const [document, setDocument] = useState<TDocument | null>(null);
+  const [_, setDocument] = useState<TDocument | null>(null);
 
   useEffect(() => {
     setLoading(true)

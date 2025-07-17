@@ -1,4 +1,4 @@
-import { BlockInfo, createBlockSpecFromStronglyTypedTiptapNode, defaultProps, getBlockInfoFromSelection, updateBlockCommand, getBlockInfo, getBlockInfoFromResolvedPos } from "@blocknote/core";
+import { BlockInfo, createBlockSpecFromStronglyTypedTiptapNode, defaultProps, getBlockInfoFromSelection, updateBlockCommand } from "@blocknote/core";
 import { createReactBlockSpec } from "@blocknote/react";
 import { Menu } from "@mantine/core";
 import { Node } from "@tiptap/core";
@@ -109,7 +109,7 @@ const specklePlugin: Plugin<DecorationSet> = new Plugin({
       return DecorationSet.create(doc, []);
 
     },
-    apply(tr, set, oldState, newState) {
+    apply(tr, _, __, newState) {
       const blockInfo: BlockInfo = getBlockInfoFromSelection(newState);
       if (
         !blockInfo.isBlockContainer ||
@@ -165,7 +165,7 @@ const specklePlugin: Plugin<DecorationSet> = new Plugin({
           },
             {
               side: 0,
-              stopEvent(event) {
+              stopEvent(_) {
                 return true;
               },
             })
