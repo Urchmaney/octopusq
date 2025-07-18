@@ -11,9 +11,10 @@ import "@blocknote/mantine/style.css";
 
 const getCustomSlashMenuItems = (
   editor: BlockNoteEditor<typeof schema.blockSchema, InlineContentSchema, StyleSchema>,
+  documentId: string
 ): DefaultReactSuggestionItem[] => [
     ...getDefaultReactSlashMenuItems(editor),
-    insertCementItem(editor),
+    insertCementItem(editor, documentId),
   ];
 
 
@@ -53,11 +54,10 @@ export function Editor({ documentId }:{ documentId: string }) {
           triggerCharacter={"/"}
           // Replaces the default Slash Menu items with our custom ones.
           getItems={async (query) =>
-            filterSuggestionItems(getCustomSlashMenuItems(docEditor.blocknoteEditor as any), query)
+            filterSuggestionItems(getCustomSlashMenuItems(docEditor.blocknoteEditor as any, documentId), query)
           }
         />
       </BlockNoteView>}
     </div>
-
   );
 }

@@ -11,12 +11,18 @@ export const schema = BlockNoteSchema.create({
   },
 });
 
-export const insertCementItem = (editor: BlockNoteEditor<typeof schema.blockSchema, InlineContentSchema, StyleSchema>) => ({
+export const insertCementItem = 
+(editor: BlockNoteEditor<typeof schema.blockSchema, InlineContentSchema, StyleSchema>,
+  documentId: string
+) => ({
   title: "Cement",
   onItemClick: () =>
     insertOrUpdateBlock(editor, {
       type: "cement",
       content: "",
+      props: {
+        documentId
+      }
     }),
   aliases: ["cement", "ce"],
   icon: <Link size={18} />,

@@ -5,6 +5,7 @@ import { Node } from "@tiptap/core";
 import { Plugin } from "prosemirror-state";
 import { Decoration, DecorationSet } from "prosemirror-view";
 import { MdArrowDropDown, MdCancel, MdCheckCircle, MdError } from "react-icons/md";
+import { firebaseDocumentAPI } from "../services/documentApi";
 
 // import "./styles.css";
 const cements = [
@@ -22,6 +23,9 @@ export const Cement = createReactBlockSpec(
       },
       show: {
         default: false
+      },
+      documentId: {
+        default: "",
       }
     },
     content: "inline",
@@ -116,6 +120,7 @@ const specklePlugin: Plugin<DecorationSet> = new Plugin({
       ) {
         return DecorationSet.create(newState.doc, []);
       }
+
       if (!blockInfo.blockContent.node.content.size && !blockInfo.blockContent.node.attrs.question) {
         return DecorationSet.create(newState.doc, [
           Decoration.widget(blockInfo.blockContent.beforePos, (view, getPos) => {
@@ -124,9 +129,6 @@ const specklePlugin: Plugin<DecorationSet> = new Plugin({
 
             const input = document.createElement("input");
             const button = document.createElement("button");
-            // button.addEventListener("click", () => {
-            //   console.log("click")
-            // })
             div.appendChild(input)
             div.appendChild(button);
             form.appendChild(div);
@@ -143,21 +145,16 @@ const specklePlugin: Plugin<DecorationSet> = new Plugin({
 
             form.addEventListener("submit", (event: SubmitEvent) => {
               event.preventDefault();
-              if (event) {
-                tr.setNodeAttribute(getPos()!, 'question', input.value);
+              button.textContent = "submitting..."
+              firebaseDocumentAPI.addQuestion(blockInfo.blockContent.node.attrs.documentId, {
+                content: input.value,
+                activeFwdDocumentId: "",
+                documentId: blockInfo.blockContent.node.attrs.documentId
+              }).then(x => {
+                tr.setNodeAttribute(getPos()!, 'question', x.content);
                 tr.setNodeAttribute(getPos()!, 'show', true);
-
-                // // console.log(node, newState.doc.resolve(getPos()!).nodeAfter)
-
-                // const blockId = node.attrs.id;
-
-                // const block = getBlockInfo({ posBeforeNode: getPos()!, node });
-
-                // console.log(view, getPos())
-
                 view.dispatch(tr);
-              }
-
+              }).catch((err) => console.log("error creating question", err))
             })
             return form;
           },
