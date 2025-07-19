@@ -1,10 +1,11 @@
-import { addDoc, collection, doc, DocumentSnapshot, getDoc, updateDoc } from "firebase/firestore/lite";
+import { addDoc, collection, doc, DocumentSnapshot, getDoc, getDocs, query, updateDoc, where } from "firebase/firestore/lite";
 import { firestoreDb } from "./firebase";
 
 export interface TDocument {
   id: string;
-  name: string
-  content: string
+  name: string;
+  content: string;
+  questionId: string;
 }
 
 export interface Question {
@@ -17,6 +18,8 @@ export interface DocumentAPI {
   getDocument: (documentId: string) => Promise<TDocument | null>
   updateDocument: (documentId: string, document: Partial<TDocument>) => Promise<void>;
   addQuestion: (documentId: string, question: Omit<Question, "id">) => Promise<Question>;
+  getQuestionDocuments: (questionId: string) => Promise<TDocument[]>;
+  createNewDoc: (name: string, questionId: string) => Promise<TDocument>;
 }
 
 const documentConverter = {
@@ -24,6 +27,7 @@ const documentConverter = {
     return {
       name: doc.name,
       content: doc.content,
+      questionId: doc.questionId
     };
   },
   fromFirestore: (snapshot: DocumentSnapshot) => {
@@ -63,9 +67,29 @@ export const firebaseDocumentAPI: DocumentAPI = {
       ...document
     });
   },
+
   addQuestion: async function (documentId: string, question: Omit<Question, "id">): Promise<Question> {
     const questionCollection = collection(firestoreDb, "questions").withConverter(questionConverter);
     const docRef = await addDoc(questionCollection, { ...question, documentId } as Omit<Question, "id">);
     return { ...question, id: docRef.id };
+  },
+
+  getQuestionDocuments: async function (questionId: string): Promise<TDocument[]> {
+    const q = query(collection(firestoreDb, "documents"), where("questionId", "==", questionId));
+    const documentSnapshot = await getDocs(q);
+    const documents: TDocument[] = [];
+    documentSnapshot.forEach((doc) => {
+      documents.push({ id: doc.id, ...doc.data() } as TDocument);
+    });
+    return documents;
+  },
+
+  createNewDoc: async function (name: string, questionId: string): Promise<TDocument> {
+    if (!questionId) throw 'Question must be present to create a document.'
+  
+    const documentCollection = collection(firestoreDb, "documents").withConverter(documentConverter);
+    const content = "[]";
+    const result = await addDoc(documentCollection, { name, questionId, content: "[]"} as TDocument);
+    return { id: result.id, name, questionId, content }
   }
 }

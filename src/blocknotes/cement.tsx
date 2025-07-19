@@ -4,13 +4,13 @@ import { Menu } from "@mantine/core";
 import { Node } from "@tiptap/core";
 import { Plugin } from "prosemirror-state";
 import { Decoration, DecorationSet } from "prosemirror-view";
-import { MdArrowDropDown, MdCancel, MdCheckCircle, MdError } from "react-icons/md";
-import { firebaseDocumentAPI } from "../services/documentApi";
+import { MdAdd, MdArrowDropDown, MdCancel } from "react-icons/md";
+import { firebaseDocumentAPI, TDocument } from "../services/documentApi";
+import { Input, SecondaryButton } from "../components";
+import { FormEventHandler, useState } from "react";
+import { Loader2 } from "lucide-react";
 
 // import "./styles.css";
-const cements = [
-  { name: "Look", icon: MdError }, { name: 'bold', icon: MdCancel }, { name: "gold", icon: MdCheckCircle }
-]
 
 export const Cement = createReactBlockSpec(
   {
@@ -20,6 +20,9 @@ export const Cement = createReactBlockSpec(
       textColor: defaultProps.textColor,
       question: {
         default: "",
+      },
+      questionId: {
+        default: ""
       },
       show: {
         default: false
@@ -32,34 +35,70 @@ export const Cement = createReactBlockSpec(
   },
   {
     render: (props) => {
+      const [fwdDocs, setFwdDocs] = useState<TDocument[]>([]);
+      const [fetchedDocs, setFetchedDocs] = useState(false);
+      const [creatingDoc, setCreatingDoc] = useState(false);
       const toggleCement = () => {
         const show = props.block.props.show;
         props.editor.updateBlock(props.block.id, { props: { show: !show } } as any);
+      }
+
+      const fetchFwdDocs = async () => {
+        if (fetchedDocs) return;
+        const docs = await firebaseDocumentAPI.getQuestionDocuments(props.block.props.questionId);
+        setFwdDocs(docs);
+        setFetchedDocs(true);
+      };
+
+      const createNewFwdDoc: FormEventHandler<HTMLFormElement> = async (event) => {
+        try {
+          event.preventDefault();
+          setCreatingDoc(true);
+          const form = event.target as HTMLFormElement;
+          const formData = new FormData(form);
+          const doc = await firebaseDocumentAPI.createNewDoc(formData.get("docName")?.toString() || "Untitled", props.block.props.questionId);
+          setFwdDocs([doc, ...fwdDocs]);
+          form.reset();
+        } catch (err) {
+          throw err
+        } finally {
+          setCreatingDoc(false);
+        }
       }
       return (
         <div className={"cement relative py-2"}>
           <div>
             {
               props.block.props.show ?
-                <div className="flex items-center gap-2">
-                  <Menu withinPortal={false}>
+                <div className="flex items-center gap-2 z-20">
+                  <Menu withinPortal={false} onOpen={fetchFwdDocs}>
                     <Menu.Target>
                       <div className={"border border-gray-400 inline-block px-4 text-[13px] rounded-b-2xl rounded-t-md cursor-pointer"} contentEditable={false}>
                         <p className="flex items-center gap-5">{props.block.props.question} <MdArrowDropDown className="text-lg" /></p>
                       </div>
                     </Menu.Target>
-                    <Menu.Dropdown>
-                      <Menu.Label>Alert Type</Menu.Label>
+                    <Menu.Dropdown className="w-full">
+                      <Menu.Label className="">
+                        <form className="flex justify-center items-center gap-1" onSubmit={createNewFwdDoc}>
+                          <Input name="docName" placeholder="Document Name" className="py-4 h-8 focus-visible:ring-offset-0 focus-visible:ring-0"></Input><SecondaryButton className="w-5 h-4 py-4">
+                            {creatingDoc ? <Loader2 /> : <MdAdd />}
+                          </SecondaryButton>
+                        </form>
+                      </Menu.Label>
                       <Menu.Divider />
-                      {cements.map((type) => {
-                        return (
+                      {
+                        fetchedDocs ? fwdDocs.map((doc) => (
                           <Menu.Item
-                            key={type.name}
+                            key={doc.id}
                           >
-                            {type.name}
+                            {doc.name}
                           </Menu.Item>
-                        );
-                      })}
+                        )
+                        ) :
+                          <div className="flex justify-center">
+                            <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+                          </div>
+                      }
                     </Menu.Dropdown>
                   </Menu>
 
@@ -73,7 +112,7 @@ export const Cement = createReactBlockSpec(
             <div className={"inline-content"} ref={props.contentRef} onInput={(event) => console.log(event.target)} />
           </div>
 
-        </div>
+        </div >
       );
     },
   },
@@ -107,9 +146,7 @@ export const cementPlugin = new Plugin({
 const specklePlugin: Plugin<DecorationSet> = new Plugin({
   state: {
     init(_, { doc }) {
-      // return DecorationSet.create(doc, [Decoration.inline(1, 5, {style: "background: yellow"})]);
       return DecorationSet.create(doc, []);
-
     },
     apply(tr, _, __, newState) {
       const blockInfo: BlockInfo = getBlockInfoFromSelection(newState);
@@ -152,6 +189,7 @@ const specklePlugin: Plugin<DecorationSet> = new Plugin({
                 documentId: blockInfo.blockContent.node.attrs.documentId
               }).then(x => {
                 tr.setNodeAttribute(getPos()!, 'question', x.content);
+                tr.setNodeAttribute(getPos()!, 'questionId', x.id);
                 tr.setNodeAttribute(getPos()!, 'show', true);
                 view.dispatch(tr);
               }).catch((err) => console.log("error creating question", err))
