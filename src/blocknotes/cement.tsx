@@ -4,11 +4,13 @@ import { Menu } from "@mantine/core";
 import { Node } from "@tiptap/core";
 import { Plugin } from "prosemirror-state";
 import { Decoration, DecorationSet } from "prosemirror-view";
-import { MdAdd, MdArrowDropDown, MdCancel } from "react-icons/md";
-import { firebaseDocumentAPI, TDocument } from "../services/documentApi";
+import { MdAdd, MdArrowDropDown, MdCancel, MdFilePresent } from "react-icons/md";
+import { firebaseDocumentAPI, Question, TDocument } from "../services/documentApi";
 import { Input, SecondaryButton } from "../components";
 import { FormEventHandler, useState } from "react";
 import { Loader2 } from "lucide-react";
+import { Link } from "react-router";
+import { useActiveDocument } from "../contexts/activeDocumentContext";
 
 // import "./styles.css";
 
@@ -38,6 +40,8 @@ export const Cement = createReactBlockSpec(
       const [fwdDocs, setFwdDocs] = useState<TDocument[]>([]);
       const [fetchedDocs, setFetchedDocs] = useState(false);
       const [creatingDoc, setCreatingDoc] = useState(false);
+      const [question, setQuestion] = useState<Question | null>(null);
+      const { setActiveDocument: setActiveDocumentId } = useActiveDocument();
       const toggleCement = () => {
         const show = props.block.props.show;
         props.editor.updateBlock(props.block.id, { props: { show: !show } } as any);
@@ -46,9 +50,18 @@ export const Cement = createReactBlockSpec(
       const fetchFwdDocs = async () => {
         if (fetchedDocs) return;
         const docs = await firebaseDocumentAPI.getQuestionDocuments(props.block.props.questionId);
+        const question = await firebaseDocumentAPI.getQuestion(props.block.props.questionId);
+        setQuestion(question);
         setFwdDocs(docs);
         setFetchedDocs(true);
       };
+
+      const openDocument = (documentId: string) => {
+        const document = fwdDocs.find(x=> x.id === documentId);
+        if (!document) return;
+
+        setActiveDocumentId(document.id);
+      }
 
       const createNewFwdDoc: FormEventHandler<HTMLFormElement> = async (event) => {
         try {
@@ -90,8 +103,24 @@ export const Cement = createReactBlockSpec(
                         fetchedDocs ? fwdDocs.map((doc) => (
                           <Menu.Item
                             key={doc.id}
+                            component="div"
+                            leftSection={<MdFilePresent />}
+                            closeMenuOnClick={false}
                           >
-                            {doc.name}
+                            <div className="flex justify-between">
+                              <div className="flex gap-1 items-center">
+                                {doc.name}
+                              </div>
+
+                              <div className="flex gap-2">
+                                {
+                                  question?.activeFwdDocumentId !== doc.id &&
+                                  <Link to="" className="cursor-pointer text-green-300">Activate</Link>
+                                }
+
+                                <Link to="" onClick={() => openDocument(doc.id)} className="cursor-pointer">Open</Link>
+                              </div>
+                            </div>
                           </Menu.Item>
                         )
                         ) :

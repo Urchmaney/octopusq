@@ -2,12 +2,13 @@ import { BlockNoteEditor, filterSuggestionItems, InlineContentSchema, StyleSchem
 import { BlockNoteView } from "@blocknote/mantine";
 import { DefaultReactSuggestionItem, getDefaultReactSlashMenuItems, SuggestionMenuController } from "@blocknote/react";
 import { insertCementItem, schema } from "../../blocknotes";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { firebaseDocumentAPI, TDocument } from "../../services/documentApi";
 import { DocumentEditor } from "../../editor";
 import { Card, CardContent, CardHeader, CardTitle } from "../card/Card";
 import { Loader2 } from "lucide-react";
 import "@blocknote/mantine/style.css";
+import { useActiveDocument } from "../../contexts/activeDocumentContext";
 
 const getCustomSlashMenuItems = (
   editor: BlockNoteEditor<typeof schema.blockSchema, InlineContentSchema, StyleSchema>,
@@ -18,21 +19,27 @@ const getCustomSlashMenuItems = (
   ];
 
 
-export function Editor({ documentId }:{ documentId: string }) {
+export function Editor() {
   const [loading, setLoading] = useState(false);
-  const [docEditor, setDocEditor] = useState<DocumentEditor | null>(null);
-  const [_, setDocument] = useState<TDocument | null>(null);
+  // const [docEditor, setDocEditor] = useState<DocumentEditor | null>(null);
+  const [document, setDocument] = useState<TDocument | null>(null);
+
+
+  const { activeDocument: documentId } = useActiveDocument();
+  const docEditor = useMemo(() => {
+    return new DocumentEditor([], "")
+  }, [document])
 
   useEffect(() => {
-    setLoading(true)
     firebaseDocumentAPI.getDocument(documentId).then(x => {
-      setDocument(x);
-      let initialContent = JSON.parse(x?.content || "[]");
-      if (!Array.isArray(initialContent) || initialContent.length === 0) initialContent = [{ type: "paragraph", content: '' }];
-      setDocEditor(new DocumentEditor(initialContent, x?.id || ""));
-      setLoading(false);
+      if (!x) return;
+      setDocument(x);   
     })
   }, [documentId]);
+
+  useEffect(() => {
+    if (document) docEditor.changeDocument(document)
+  }, [document])
 
   if(loading) {
      return (

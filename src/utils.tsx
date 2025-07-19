@@ -39,5 +39,3 @@ export function debounce(fn: Function, delay: number) {
     }, delay);
   };
 }
-
-export const consoleDebounce = debounce(console.log, 5000)
