@@ -15,9 +15,10 @@ export interface Question {
   activeFwdDocumentId: string;
 }
 export interface DocumentAPI {
-  getDocument: (documentId: string) => Promise<TDocument | null>
+  getDocument: (documentId: string) => Promise<TDocument | null>;
   updateDocument: (documentId: string, document: Partial<TDocument>) => Promise<void>;
   addQuestion: (documentId: string, question: Omit<Question, "id">) => Promise<Question>;
+  getQuestion: (questionId: string) => Promise<Question | null>;
   getQuestionDocuments: (questionId: string) => Promise<TDocument[]>;
   createNewDoc: (name: string, questionId: string) => Promise<TDocument>;
 }
@@ -74,22 +75,31 @@ export const firebaseDocumentAPI: DocumentAPI = {
     return { ...question, id: docRef.id };
   },
 
+  getQuestion: async function (questionId: string): Promise<Question | null> {
+    const questionReference = doc(firestoreDb, "questions", questionId).withConverter(questionConverter);
+    const questionSnapshot = await getDoc(questionReference);
+    if (questionSnapshot.exists()) {
+      return questionSnapshot.data();
+    }
+    return null;
+  },
+
   getQuestionDocuments: async function (questionId: string): Promise<TDocument[]> {
-    const q = query(collection(firestoreDb, "documents"), where("questionId", "==", questionId));
+    const q = query(collection(firestoreDb, "documents"), where("questionId", "==", questionId)).withConverter(documentConverter);
     const documentSnapshot = await getDocs(q);
     const documents: TDocument[] = [];
     documentSnapshot.forEach((doc) => {
-      documents.push({ id: doc.id, ...doc.data() } as TDocument);
+      documents.push(doc.data());
     });
     return documents;
   },
 
   createNewDoc: async function (name: string, questionId: string): Promise<TDocument> {
     if (!questionId) throw 'Question must be present to create a document.'
-  
+
     const documentCollection = collection(firestoreDb, "documents").withConverter(documentConverter);
     const content = "[]";
-    const result = await addDoc(documentCollection, { name, questionId, content: "[]"} as TDocument);
+    const result = await addDoc(documentCollection, { name, questionId, content: "[]" } as TDocument);
     return { id: result.id, name, questionId, content }
   }
 }
