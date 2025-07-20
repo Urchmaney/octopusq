@@ -1,9 +1,14 @@
-import { useWorkspaceContext } from "../../hooks";
+
+import { Editor } from "../../components/editor/Editor";
+import { ActiveDocumentProvider } from "../../contexts/activeDocumentContext";
 
 
 export function Dashboard() {
-  const { activeWorkspace } = useWorkspaceContext();
   return (
-    <div className="text-2xl text-black">{`Dashboard ${activeWorkspace}`}</div>
+    <ActiveDocumentProvider defaultDocument="j3EWkSF9id8APitwH9Hi">
+      <div className="bg-white h-full">
+        <Editor />
+      </div>
+    </ActiveDocumentProvider>
   );
 }
