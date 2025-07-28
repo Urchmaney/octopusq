@@ -10,9 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@blocknote/core": "^0.30.0",
-    "@blocknote/mantine": "^0.30.0",
-    "@blocknote/react": "^0.30.0",
+    "@blocknote/core": "^0.35.0",
+    "@blocknote/mantine": "^0.35.0",
+    "@blocknote/react": "^0.35.0",
     "@radix-ui/react-select": "^2.2.5",
     "@tailwindcss/vite": "^4.1.5",
     "@tiptap/core": "^2.13.0",
@@ -23,6 +23,7 @@
     "lucide-react": "^0.507.0",
     "prosemirror-model": "^1.25.1",
     "prosemirror-state": "^1.4.3",
+    "prosemirror-transform": "^1.10.4",
     "prosemirror-view": "^1.40.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
