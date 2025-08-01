@@ -1,4 +1,4 @@
-import { BlockNoteEditor, BlockNoteSchema, createBlockSpecFromStronglyTypedTiptapNode, defaultBlockSpecs, defaultProps, InlineContentSchema, insertOrUpdateBlock, StyleSchema } from "@blocknote/core";
+import { BlockNoteEditor, BlockNoteSchema, createBlockSpecFromStronglyTypedTiptapNode, defaultBlockSpecs, defaultProps, InlineContentSchema, StyleSchema } from "@blocknote/core";
 import { Cement, CementRulesSpec } from "./cement";
 import { Link } from "lucide-react";
 import { Plugin, PluginKey } from "prosemirror-state";

@@ -1,4 +1,4 @@
-import { removeAndInsertBlocks, createBlockSpecFromStronglyTypedTiptapNode, defaultProps, getBlockInfo, getBlockInfoFromSelection, getBlockInfoFromTransaction, getNearestBlockPos, nodeToBlock, updateBlockCommand } from "@blocknote/core";
+import { removeAndInsertBlocks, createBlockSpecFromStronglyTypedTiptapNode, defaultProps, getBlockInfo, getBlockInfoFromSelection, getNearestBlockPos, nodeToBlock, updateBlockCommand } from "@blocknote/core";
 import { createReactBlockSpec } from "@blocknote/react";
 import { Menu } from "@mantine/core";
 import { Node } from "@tiptap/core";
@@ -36,6 +36,7 @@ export const Cement = createReactBlockSpec(
       }
     },
     content: "none",
+    isSelectable: false
   },
   {
     render: (props) => {

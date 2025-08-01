@@ -2,7 +2,6 @@ import { Block, BlockNoteEditor, BlocksChanged, BlockSchemaFromSpecs, InlineCont
 import { debounce } from "../utils";
 import { schema } from "../blocknotes";
 import { DocumentAPI, firebaseDocumentAPI, TDocument } from "../services/documentApi";
-import { resultExtension } from "../blocknotes/result";
 
 export class DocumentEditor {
 	private documentApi: DocumentAPI = firebaseDocumentAPI;
