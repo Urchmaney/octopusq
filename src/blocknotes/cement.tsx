@@ -1,4 +1,4 @@
-import { BlockInfo, createBlockSpecFromStronglyTypedTiptapNode, defaultProps, getBlockInfoFromSelection, updateBlockCommand } from "@blocknote/core";
+import { removeAndInsertBlocks, createBlockSpecFromStronglyTypedTiptapNode, defaultProps, getBlockInfo, getBlockInfoFromSelection, getNearestBlockPos, nodeToBlock, updateBlockCommand } from "@blocknote/core";
 import { createReactBlockSpec } from "@blocknote/react";
 import { Menu } from "@mantine/core";
 import { Node } from "@tiptap/core";
@@ -11,6 +11,7 @@ import { FormEventHandler, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { Link } from "react-router";
 import { useActiveDocument } from "../contexts/activeDocumentContext";
+import { createCementKey } from ".";
 
 // import "./styles.css";
 
@@ -23,6 +24,7 @@ export const Cement = createReactBlockSpec(
       question: {
         default: "",
       },
+
       questionId: {
         default: ""
       },
@@ -33,7 +35,8 @@ export const Cement = createReactBlockSpec(
         default: "",
       }
     },
-    content: "inline",
+    content: "none",
+    isSelectable: false
   },
   {
     render: (props) => {
@@ -57,10 +60,15 @@ export const Cement = createReactBlockSpec(
       };
 
       const openDocument = (documentId: string) => {
-        const document = fwdDocs.find(x=> x.id === documentId);
+        const document = fwdDocs.find(x => x.id === documentId);
         if (!document) return;
 
         setActiveDocumentId(document.id);
+      }
+
+      const activateDocument = (documentId: string) => {
+        const document = fwdDocs.find(x => x.id === documentId);
+        if (!document) return;
       }
 
       const createNewFwdDoc: FormEventHandler<HTMLFormElement> = async (event) => {
@@ -115,7 +123,7 @@ export const Cement = createReactBlockSpec(
                               <div className="flex gap-2">
                                 {
                                   question?.activeFwdDocumentId !== doc.id &&
-                                  <Link to="" className="cursor-pointer text-green-300">Activate</Link>
+                                  <Link to="" onClick={() => activateDocument(doc.id)} className="cursor-pointer text-green-300">Activate</Link>
                                 }
 
                                 <Link to="" onClick={() => openDocument(doc.id)} className="cursor-pointer">Open</Link>
@@ -136,10 +144,10 @@ export const Cement = createReactBlockSpec(
                 : <button className="cursor-pointer" onClick={toggleCement}>show</button>
             }
           </div>
-
+          {/* 
           <div>
-            <div className={"inline-content"} ref={props.contentRef} onInput={(event) => console.log(event.target)} />
-          </div>
+            <div className={"inline-content"} ref={props.contentRef} />
+          </div> */}
 
         </div >
       );
@@ -177,63 +185,73 @@ const specklePlugin: Plugin<DecorationSet> = new Plugin({
     init(_, { doc }) {
       return DecorationSet.create(doc, []);
     },
-    apply(tr, _, __, newState) {
-      const blockInfo: BlockInfo = getBlockInfoFromSelection(newState);
-      if (
-        !blockInfo.isBlockContainer ||
-        blockInfo.blockContent.node.type.spec.content !== "inline*"
-        || blockInfo.blockNoteType !== "cement"
-      ) {
-        return DecorationSet.create(newState.doc, []);
-      }
+    apply(tr, value, __, newState) {
+      let documentId: string;
+      if (!(documentId = tr.getMeta(createCementKey))) return value;
+      console.log(documentId)
 
-      if (!blockInfo.blockContent.node.content.size && !blockInfo.blockContent.node.attrs.question) {
-        return DecorationSet.create(newState.doc, [
-          Decoration.widget(blockInfo.blockContent.beforePos, (view, getPos) => {
-            const div = document.createElement("div");
-            const form = document.createElement("form");
+      if (documentId === "end") return DecorationSet.create(newState.doc, []);
 
-            const input = document.createElement("input");
-            const button = document.createElement("button");
-            div.appendChild(input)
-            div.appendChild(button);
-            form.appendChild(div);
-            button.textContent = "submit"
-            button.type = "submit";
-            input.name = "questionInput"
-            input.type = "text";
-            input.placeholder = "question";
-            input.className = "question-input";
-            input.style.padding = "4px";
-            input.style.margin = "0 4px";
-            input.style.border = "1px solid #ccc";
-            input.style.borderRadius = "4px";
 
-            form.addEventListener("submit", (event: SubmitEvent) => {
-              event.preventDefault();
-              button.textContent = "submitting..."
-              firebaseDocumentAPI.addQuestion(blockInfo.blockContent.node.attrs.documentId, {
-                content: input.value,
-                activeFwdDocumentId: "",
-                documentId: blockInfo.blockContent.node.attrs.documentId
-              }).then(x => {
-                tr.setNodeAttribute(getPos()!, 'question', x.content);
-                tr.setNodeAttribute(getPos()!, 'questionId', x.id);
-                tr.setNodeAttribute(getPos()!, 'show', true);
-                view.dispatch(tr);
-              }).catch((err) => console.log("error creating question", err))
-            })
-            return form;
-          },
-            {
-              side: 0,
-              stopEvent(_) {
-                return true;
-              },
-            })
-        ])
-      }
-      return DecorationSet.create(newState.doc, []);
+      return DecorationSet.create(newState.doc, [
+        Decoration.widget(tr.selection.anchor, (view, getPos) => {
+          const div = document.createElement("div");
+          const form = document.createElement("form");
+
+          const input = document.createElement("input");
+          const documentInput = document.createElement("input");
+          const button = document.createElement("button");
+          div.appendChild(documentInput);
+          div.appendChild(input)
+          div.appendChild(button);
+          form.appendChild(div);
+          documentInput.setAttribute('type', 'hidden');
+          documentInput.value = documentId;
+          button.textContent = "submit"
+          button.type = "submit";
+          input.name = "questionInput"
+          input.type = "text";
+          input.placeholder = "question";
+          input.className = "question-input";
+          input.style.padding = "4px";
+          input.style.margin = "0 4px";
+          input.style.border = "1px solid #ccc";
+          input.style.borderRadius = "4px";
+
+          form.addEventListener("submit", (event: SubmitEvent) => {
+            event.preventDefault();
+            button.textContent = "submitting..."
+            firebaseDocumentAPI.addQuestion(documentInput.value, {
+              content: input.value,
+              activeFwdDocumentId: "",
+              documentId: documentInput.value
+            }).then(x => {
+              const blockInfo = getBlockInfo(getNearestBlockPos(view.state.doc, getPos()!));
+
+              const block = nodeToBlock(blockInfo.bnBlock.node, view.state.doc.type.schema);
+              tr.setMeta(createCementKey, "end");
+              removeAndInsertBlocks(tr, [block.id], [
+                {
+                  type: "cement",
+                  props: {
+                    "questionId": x.id,
+                    "show": true,
+                    "question": x.content
+                  } as any
+                }
+              ]);
+              view.dispatch(tr)
+            }).catch((err) => console.log("error creating question", err))
+          })
+          return form;
+        },
+          {
+            side: 0,
+            stopEvent(_) {
+              return true;
+            },
+          })
+      ])
 
     }
   },
@@ -280,6 +298,11 @@ export const CementRulesSpec = createBlockSpecFromStronglyTypedTiptapNode(
             return true
           }
 
+        },
+
+        'Enter': () => {
+          console.log("Enter entered")
+          return true;
         }
       }
     },

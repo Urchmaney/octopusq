@@ -1,4 +1,4 @@
-import { BlockNoteEditor, BlocksChanged, BlockSchemaFromSpecs, InlineContentSchema, PartialBlock, StyleSchema } from "@blocknote/core";
+import { Block, BlockNoteEditor, BlocksChanged, BlockSchemaFromSpecs, InlineContentSchema, PartialBlock, StyleSchema } from "@blocknote/core";
 import { debounce } from "../utils";
 import { schema } from "../blocknotes";
 import { DocumentAPI, firebaseDocumentAPI, TDocument } from "../services/documentApi";
@@ -6,7 +6,7 @@ import { DocumentAPI, firebaseDocumentAPI, TDocument } from "../services/documen
 export class DocumentEditor {
 	private documentApi: DocumentAPI = firebaseDocumentAPI;
 	private _blocknoteEditor: BlockNoteEditor<any, any, any>;
-
+	private excludedBlocksId: Set<string> = new Set<string>();
 
 	constructor(initialContent: PartialBlock[] , private documentId: string) {
     if (!Array.isArray(initialContent) || initialContent.length === 0) initialContent = [{ type: "paragraph", content: '' }];
@@ -17,8 +17,12 @@ export class DocumentEditor {
 		this._blocknoteEditor.onChange(this.cementToParagraphWithoutAttr);
 	}
 
+	sanitizedDocument(document: Block[]) {
+		return document.filter(block => !this.excludedBlocksId.has(block.id))
+	}
+
 	async updateDocument(document: any) {
-		await this.documentApi.updateDocument(this.documentId, { content: JSON.stringify(document) });
+		await this.documentApi.updateDocument(this.documentId, { content: JSON.stringify(this.sanitizedDocument(document)) });
 	}
 
 	cementToParagraphWithoutAttr(editor: BlockNoteEditor<any, any, any>, { getChanges }: { getChanges: () => BlocksChanged<BlockSchemaFromSpecs<typeof schema.blockSpecs>, InlineContentSchema, StyleSchema> }) {
@@ -42,5 +46,9 @@ export class DocumentEditor {
 		if(this.documentId) await this.updateDocument(this._blocknoteEditor.document);
 		this.documentId = document.id;
 		this._blocknoteEditor.replaceBlocks(this._blocknoteEditor.document, JSON.parse(document.content));
+	}
+
+	addExcludedBlocksId(...ids: string[]) {
+		ids.forEach(id => this.excludedBlocksId.add(id));
 	}
 }

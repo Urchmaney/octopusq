@@ -10,6 +10,7 @@ import { Loader2 } from "lucide-react";
 import "@blocknote/mantine/style.css";
 import { useActiveDocument } from "../../contexts/activeDocumentContext";
 
+
 const getCustomSlashMenuItems = (
   editor: BlockNoteEditor<typeof schema.blockSchema, InlineContentSchema, StyleSchema>,
   documentId: string
@@ -18,22 +19,19 @@ const getCustomSlashMenuItems = (
     insertCementItem(editor, documentId),
   ];
 
-
 export function Editor() {
-  const [loading, _] = useState(false);
-  // const [docEditor, setDocEditor] = useState<DocumentEditor | null>(null);
   const [document, setDocument] = useState<TDocument | null>(null);
-
 
   const { activeDocument: documentId } = useActiveDocument();
   const docEditor = useMemo(() => {
     return new DocumentEditor([], "")
-  }, [document])
+  }, [])
+
 
   useEffect(() => {
     firebaseDocumentAPI.getDocument(documentId).then(x => {
       if (!x) return;
-      setDocument(x);   
+      setDocument(x);
     })
   }, [documentId]);
 
@@ -41,8 +39,8 @@ export function Editor() {
     if (document) docEditor.changeDocument(document)
   }, [document])
 
-  if(loading) {
-     return (
+  if (!docEditor.blocknoteEditor) {
+    return (
       <Card className="bg-white border-gray-200 shadow-sm">
         <CardHeader>
           <CardTitle className="text-gray-900">Loading Editor</CardTitle>
@@ -56,12 +54,13 @@ export function Editor() {
   }
   return (
     <div className="bg-white h-full">
-      {docEditor?.blocknoteEditor && <BlockNoteView editor={docEditor.blocknoteEditor}>
+      {docEditor.blocknoteEditor && <BlockNoteView editor={docEditor.blocknoteEditor} slashMenu={false}>
         <SuggestionMenuController
           triggerCharacter={"/"}
           // Replaces the default Slash Menu items with our custom ones.
-          getItems={async (query) =>
-            filterSuggestionItems(getCustomSlashMenuItems(docEditor.blocknoteEditor as any, documentId), query)
+          getItems={async (query) => {
+            return filterSuggestionItems(getCustomSlashMenuItems(docEditor.blocknoteEditor as any, documentId), query);
+          }
           }
         />
       </BlockNoteView>}
