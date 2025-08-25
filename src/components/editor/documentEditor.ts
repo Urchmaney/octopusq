@@ -6,13 +6,13 @@ import { DocumentAPI, firebaseDocumentAPI, TDocument } from "../../services/docu
 export class DocumentEditor {
 	private documentApi: DocumentAPI = firebaseDocumentAPI;
 	private _blocknoteEditor: BlockNoteEditor<any, any, any>;
-	private _resultEditor: BlockNoteEditor<any, any, any>;
+	// private _resultEditor: BlockNoteEditor<any, any, any>;
 	private excludedBlocksId: Set<string> = new Set<string>();
 
 	constructor(initialContent: PartialBlock[], private documentId: string) {
 		if (!Array.isArray(initialContent) || initialContent.length === 0) initialContent = [{ type: "paragraph", content: '' }];
 		this._blocknoteEditor = BlockNoteEditor.create({ initialContent, schema });
-		this._resultEditor = BlockNoteEditor.create({ })
+		// this._resultEditor = BlockNoteEditor.create({ })
 		this.updateDocument = this.updateDocument.bind(this);
 		const debounceUpdateDocument = debounce(this.updateDocument, 500);
 		this._blocknoteEditor.onChange((editor) => debounceUpdateDocument(editor.document));
