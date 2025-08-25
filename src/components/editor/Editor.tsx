@@ -1,10 +1,10 @@
 import { BlockNoteEditor, filterSuggestionItems, InlineContentSchema, StyleSchema } from "@blocknote/core";
 import { BlockNoteView } from "@blocknote/mantine";
 import { DefaultReactSuggestionItem, getDefaultReactSlashMenuItems, SuggestionMenuController } from "@blocknote/react";
-import { insertCementItem, schema } from "../../blocknotes";
+import { insertCementItem, schema } from "./schema";
 import { useEffect, useMemo, useState } from "react";
 import { firebaseDocumentAPI, TDocument } from "../../services/documentApi";
-import { DocumentEditor } from "../../editor";
+import { DocumentEditor } from "./documentEditor";
 import { Card, CardContent, CardHeader, CardTitle } from "../card/Card";
 import { Loader2 } from "lucide-react";
 import "@blocknote/mantine/style.css";
@@ -23,6 +23,7 @@ export function Editor() {
   const [document, setDocument] = useState<TDocument | null>(null);
 
   const { activeDocument: documentId } = useActiveDocument();
+
   const docEditor = useMemo(() => {
     return new DocumentEditor([], "")
   }, [])
@@ -53,7 +54,7 @@ export function Editor() {
     );
   }
   return (
-    <div className="bg-white h-full">
+    <div className="bg-white h-full relative">
       {docEditor.blocknoteEditor && <BlockNoteView editor={docEditor.blocknoteEditor} slashMenu={false}>
         <SuggestionMenuController
           triggerCharacter={"/"}

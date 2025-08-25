@@ -1,20 +1,22 @@
 import { Block, BlockNoteEditor, BlocksChanged, BlockSchemaFromSpecs, InlineContentSchema, PartialBlock, StyleSchema } from "@blocknote/core";
-import { debounce } from "../utils";
-import { schema } from "../blocknotes";
-import { DocumentAPI, firebaseDocumentAPI, TDocument } from "../services/documentApi";
+import { debounce } from "../../utils";
+import { schema } from "./schema";
+import { DocumentAPI, firebaseDocumentAPI, TDocument } from "../../services/documentApi";
 
 export class DocumentEditor {
 	private documentApi: DocumentAPI = firebaseDocumentAPI;
 	private _blocknoteEditor: BlockNoteEditor<any, any, any>;
+	private _resultEditor: BlockNoteEditor<any, any, any>;
 	private excludedBlocksId: Set<string> = new Set<string>();
 
-	constructor(initialContent: PartialBlock[] , private documentId: string) {
-    if (!Array.isArray(initialContent) || initialContent.length === 0) initialContent = [{ type: "paragraph", content: '' }];
+	constructor(initialContent: PartialBlock[], private documentId: string) {
+		if (!Array.isArray(initialContent) || initialContent.length === 0) initialContent = [{ type: "paragraph", content: '' }];
 		this._blocknoteEditor = BlockNoteEditor.create({ initialContent, schema });
+		this._resultEditor = BlockNoteEditor.create({ })
 		this.updateDocument = this.updateDocument.bind(this);
-		const debounceUpdateDocument = debounce(this.updateDocument, 3000);
-		this._blocknoteEditor.onChange((editor) => (debounceUpdateDocument(editor.document)));
-		this._blocknoteEditor.onChange(this.cementToParagraphWithoutAttr);
+		const debounceUpdateDocument = debounce(this.updateDocument, 500);
+		this._blocknoteEditor.onChange((editor) => debounceUpdateDocument(editor.document));
+
 	}
 
 	sanitizedDocument(document: Block[]) {
@@ -22,20 +24,21 @@ export class DocumentEditor {
 	}
 
 	async updateDocument(document: any) {
+		console.log(this.sanitizedDocument(document))
 		await this.documentApi.updateDocument(this.documentId, { content: JSON.stringify(this.sanitizedDocument(document)) });
 	}
 
 	cementToParagraphWithoutAttr(editor: BlockNoteEditor<any, any, any>, { getChanges }: { getChanges: () => BlocksChanged<BlockSchemaFromSpecs<typeof schema.blockSpecs>, InlineContentSchema, StyleSchema> }) {
 		const changes = getChanges();
-      changes.forEach(change => {
-        if (change.block.type === "cement" && !(change.block.props as any).question && (change.block?.content as any)?.length || 0 > 0) {
-          editor.updateBlock(change.block.id, {
-            type: "paragraph",
-            content: change.block.content
-          } as any)
-          editor.setTextCursorPosition(change.block.id, "end")
-        }
-      });
+		changes.forEach(change => {
+			if (change.block.type === "cement" && !(change.block.props as any).question && (change.block?.content as any)?.length || 0 > 0) {
+				editor.updateBlock(change.block.id, {
+					type: "paragraph",
+					content: change.block.content
+				} as any)
+				editor.setTextCursorPosition(change.block.id, "end")
+			}
+		});
 	}
 
 	get blocknoteEditor() {
@@ -43,7 +46,7 @@ export class DocumentEditor {
 	}
 
 	async changeDocument(document: TDocument) {
-		if(this.documentId) await this.updateDocument(this._blocknoteEditor.document);
+		if (this.documentId) await this.updateDocument(this._blocknoteEditor.document);
 		this.documentId = document.id;
 		this._blocknoteEditor.replaceBlocks(this._blocknoteEditor.document, JSON.parse(document.content));
 	}
