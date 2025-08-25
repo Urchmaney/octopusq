@@ -2,18 +2,20 @@ import { removeAndInsertBlocks, createBlockSpecFromStronglyTypedTiptapNode, defa
 import { createReactBlockSpec } from "@blocknote/react";
 import { Menu } from "@mantine/core";
 import { Node } from "@tiptap/core";
-import { Plugin } from "prosemirror-state";
+import { Plugin, PluginKey } from "prosemirror-state";
 import { Decoration, DecorationSet } from "prosemirror-view";
 import { MdAdd, MdArrowDropDown, MdCancel, MdFilePresent } from "react-icons/md";
-import { firebaseDocumentAPI, Question, TDocument } from "../services/documentApi";
-import { Input, SecondaryButton } from "../components";
+import { firebaseDocumentAPI, Question, TDocument } from "../../../services/documentApi";
+import { Input, SecondaryButton } from "../../../components";
 import { FormEventHandler, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { Link } from "react-router";
-import { useActiveDocument } from "../contexts/activeDocumentContext";
-import { createCementKey } from ".";
+import { useActiveDocument } from "../../../contexts/activeDocumentContext";
 
 // import "./styles.css";
+
+export const createCementKey = new PluginKey("createCementKey");
+
 
 export const Cement = createReactBlockSpec(
   {
@@ -241,7 +243,7 @@ const specklePlugin: Plugin<DecorationSet> = new Plugin({
                 }
               ]);
               view.dispatch(tr)
-            }).catch((err) => console.log("error creating question", err))
+            }).catch((err: any) => console.log("error creating question", err))
           })
           return form;
         },
@@ -297,13 +299,7 @@ export const CementRulesSpec = createBlockSpecFromStronglyTypedTiptapNode(
           } catch (_) {
             return true
           }
-
         },
-
-        'Enter': () => {
-          console.log("Enter entered")
-          return true;
-        }
       }
     },
     addProseMirrorPlugins() {
