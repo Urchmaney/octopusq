@@ -1,5 +1,5 @@
 import { BlockNoteEditor, BlockNoteSchema, createBlockSpecFromStronglyTypedTiptapNode, defaultBlockSpecs, defaultProps, InlineContentSchema, StyleSchema } from "@blocknote/core";
-import { Cement, CementRulesSpec, createCementKey, DocumentSpec } from "./cement";
+import { Cement, CementRulesSpec, createCementKey } from "./cement";
 import { Link } from "lucide-react";
 import { Plugin, PluginKey } from "prosemirror-state";
 import { AbsoluteBlock } from "./result";
@@ -7,7 +7,6 @@ import { AbsoluteBlock } from "./result";
 export const schema = BlockNoteSchema.create({
   blockSpecs: {
     // Adds all default blocks.
-    doc: DocumentSpec,
     ...defaultBlockSpecs,
     // absoluteBlock: AbsoluteBlock,
     cementRules: CementRulesSpec,

@@ -308,13 +308,3 @@ export const CementRulesSpec = createBlockSpecFromStronglyTypedTiptapNode(
   }),
   {}
 )
-
-export const DocumentSpec = createBlockSpecFromStronglyTypedTiptapNode(
-  Node.create({
-    name: "docky",
-    topNode: true,
-    content: "blockGroup",
-    marks: "insertion modification deletion",
-  }),
-  {}
-)
