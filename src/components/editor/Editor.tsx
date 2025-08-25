@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { firebaseDocumentAPI, TDocument } from "../../services/documentApi";
 import { DocumentEditor } from "./documentEditor";
 import { Card, CardContent, CardHeader, CardTitle } from "../card/Card";
-import { Loader2 } from "lucide-react";
+import { CircleChevronLeft, Loader2, X } from "lucide-react";
 import "@blocknote/mantine/style.css";
 import { useActiveDocument } from "../../contexts/activeDocumentContext";
 
@@ -20,6 +20,7 @@ const getCustomSlashMenuItems = (
   ];
 
 export function Editor() {
+  const [isDrawerOpen, setDrawerOpen] = useState(false);
   const [document, setDocument] = useState<TDocument | null>(null);
 
   const { activeDocument: documentId } = useActiveDocument();
@@ -54,7 +55,7 @@ export function Editor() {
     );
   }
   return (
-    <div className="bg-white h-full relative">
+    <div className="bg-white h-full relative overflow-x-hidden">
       {docEditor.blocknoteEditor && <BlockNoteView editor={docEditor.blocknoteEditor} slashMenu={false}>
         <SuggestionMenuController
           triggerCharacter={"/"}
@@ -65,6 +66,34 @@ export function Editor() {
           }
         />
       </BlockNoteView>}
+
+      { !isDrawerOpen && 
+        <div
+          className="absolute top-0 right-0 text-black"
+          onClick={() => setDrawerOpen(true)}
+        ><CircleChevronLeft /></div>
+      }
+      {<div className={`w-1/2 top-0 right-0 border-2 border-amber-500 absolute h-full bg-white z-50 p-6 transform transition-transform duration-300 ease-in-out
+        ${isDrawerOpen ? "translate-x-0" : "translate-x-full"}`}>
+
+        <div className="flex justify-end">
+          <button onClick={() => setDrawerOpen(false)}><X className="text-red-300" /></button>
+        </div>
+        <div>
+          
+        </div>
+        {docEditor.resultEditor && <BlockNoteView editor={docEditor.resultEditor} slashMenu={false}>
+          <SuggestionMenuController
+            triggerCharacter={"/"}
+            // Replaces the default Slash Menu items with our custom ones.
+            getItems={async (query) => {
+              return filterSuggestionItems(getCustomSlashMenuItems(docEditor.resultEditor as any, documentId), query);
+            }
+            }
+          />
+        </BlockNoteView>}
+      </div>
+      }
     </div>
   );
 }
