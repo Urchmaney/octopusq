@@ -1,7 +1,5 @@
 import {  BlockNoteSchema, createBlockSpecFromStronglyTypedTiptapNode, defaultBlockSpecs, defaultProps } from "@blocknote/core";
 import { Cement, CementRulesSpec } from "./cement";
-
-import { Plugin } from "prosemirror-state";
 import { DOMNode } from "@tiptap/core";
 
 
