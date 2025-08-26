@@ -1,7 +1,8 @@
 import { BlockNoteEditor, BlockNoteSchema, createBlockSpecFromStronglyTypedTiptapNode, defaultBlockSpecs, defaultProps, InlineContentSchema, StyleSchema } from "@blocknote/core";
 import { Cement, CementRulesSpec, createCementKey } from "./cement";
-import { Link } from "lucide-react";
+
 import { Plugin } from "prosemirror-state";
+import { DOMNode } from "@tiptap/core";
 
 
 export const schema = BlockNoteSchema.create({
@@ -12,43 +13,19 @@ export const schema = BlockNoteSchema.create({
     cementRules: CementRulesSpec,
     cement: Cement,
     oparagraph: createBlockSpecFromStronglyTypedTiptapNode(
-      defaultBlockSpecs.paragraph.implementation.node.extend({
+      defaultBlockSpecs["paragraph"].implementation.node.extend({
         name: "oparagraph",
-        atom: true,
-        addProseMirrorPlugins() {
-          return [
-            new Plugin({
-              // Filter transactions for all display blocks
-              filterTransaction(tr) {
-                const { selection } = tr;
-                if (selection.anchor == selection.head && selection.$anchor.node().type.name === "oparagraph") {
-                  return false;
-                }
-
-                return true; // Block edits
-              }
-            })
-          ]
-        }
+        renderHTML(props) {
+          const result = defaultBlockSpecs.paragraph.implementation.node.config.renderHTML?.call({
+            name: "paragraph", storage: this.storage, parent: null, options: this.options, editor: this.editor
+          }, props) as {dom: DOMNode, contentDOM?: HTMLElement};
+          if(result && result.dom) {
+            (result.dom as HTMLElement).contentEditable = "false"
+          } 
+          return result
+        },
       }),
       { ...defaultProps }
     )
   },
 });
-
-export const insertCementItem =
-  (editor: BlockNoteEditor<typeof schema.blockSchema, InlineContentSchema, StyleSchema>,
-    documentId: string
-  ) => ({
-    title: "Cement",
-    onItemClick: () => {
-      return editor.transact((tr) => {
-        tr.setMeta(createCementKey, documentId);
-      })
-    },
-    group: "Question",
-    key: "cement_01",
-    aliases: [],
-    icon: <Link size={18} />,
-    subtext: "Insert a block with for cement.",
-  });
