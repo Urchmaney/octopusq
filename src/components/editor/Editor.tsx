@@ -1,7 +1,8 @@
 import { BlockNoteEditor, filterSuggestionItems, InlineContentSchema, StyleSchema } from "@blocknote/core";
 import { BlockNoteView } from "@blocknote/mantine";
 import { DefaultReactSuggestionItem, getDefaultReactSlashMenuItems, SuggestionMenuController } from "@blocknote/react";
-import { insertCementItem, schema } from "./schema";
+import { schema } from "./schema";
+import { insertCementItem } from "./commands";
 import { useEffect, useMemo, useState } from "react";
 import { firebaseDocumentAPI, TDocument } from "../../services/documentApi";
 import { DocumentEditor } from "./documentEditor";
