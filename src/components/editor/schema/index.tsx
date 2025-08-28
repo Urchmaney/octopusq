@@ -1,4 +1,4 @@
-import {  BlockNoteSchema, createBlockSpecFromStronglyTypedTiptapNode, defaultBlockSpecs, defaultProps } from "@blocknote/core";
+import { BlockNoteSchema, createBlockSpecFromStronglyTypedTiptapNode, createStronglyTypedTiptapNode, defaultBlockSpecs, defaultProps } from "@blocknote/core";
 import { Cement, CementRulesSpec } from "./cement";
 import { DOMNode } from "@tiptap/core";
 
@@ -16,10 +16,10 @@ export const schema = BlockNoteSchema.create({
         renderHTML(props) {
           const result = defaultBlockSpecs.paragraph.implementation.node.config.renderHTML?.call({
             name: "paragraph", storage: this.storage, parent: null, options: this.options, editor: this.editor
-          }, props) as {dom: DOMNode, contentDOM?: HTMLElement};
-          if(result && result.dom) {
+          }, props) as { dom: DOMNode, contentDOM?: HTMLElement };
+          if (result && result.dom) {
             (result.dom as HTMLElement).contentEditable = "false"
-          } 
+          }
           return result
         },
       }),
@@ -27,3 +27,9 @@ export const schema = BlockNoteSchema.create({
     )
   },
 });
+
+export const resultSchema = BlockNoteSchema.create({
+  blockSpecs: {
+    ...defaultBlockSpecs,
+  }
+})
