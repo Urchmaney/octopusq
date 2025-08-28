@@ -1,4 +1,4 @@
-import { addDoc, collection, doc, DocumentSnapshot, getDoc, getDocs, query, updateDoc, where } from "firebase/firestore/lite";
+import { addDoc, collection, doc, DocumentSnapshot, getDoc, getDocs, query, setDoc, updateDoc, where } from "firebase/firestore/lite";
 import { firestoreDb } from "./firebase";
 
 export interface TDocument {
@@ -6,6 +6,13 @@ export interface TDocument {
   name: string;
   content: string;
   questionId: string;
+  resultId: string;
+}
+
+export interface TDocumentResult {
+  id: string;
+  documentId: string;
+  content: string;
 }
 
 export interface Question {
@@ -21,21 +28,34 @@ export interface DocumentAPI {
   getQuestion: (questionId: string) => Promise<Question | null>;
   getQuestionDocuments: (questionId: string) => Promise<TDocument[]>;
   createNewDoc: (name: string, questionId: string) => Promise<TDocument>;
+
+  getDocumentResult: (documentResultId: string) => Promise<TDocumentResult | null>;
+  updateDocumentResult: (documentResultId: string, content: string) => Promise<void>;
 }
 
 const documentConverter = {
-  toFirestore: (doc: TDocument) => {
-    return {
-      name: doc.name,
-      content: doc.content,
-      questionId: doc.questionId
-    };
-  },
+  toFirestore: (doc: TDocument) => ({
+    name: doc.name,
+    content: doc.content,
+    questionId: doc.questionId,
+    resultId: doc.resultId
+  }),
   fromFirestore: (snapshot: DocumentSnapshot) => {
     const data = snapshot.data();
-    return { name: data?.name, content: data?.content, id: snapshot.id } as TDocument;
+    return { name: data?.name, content: data?.content, id: snapshot.id, resultId: data?.resultId } as TDocument;
   },
 };
+
+const documentResultConverter = {
+  toFirestore: (doc: TDocumentResult) => ({
+    documentId: doc.documentId,
+    content: doc.content,
+  }),
+  fromFirestore: (snapshot: DocumentSnapshot) => {
+    const data = snapshot.data();
+    return { documentId: data?.documentId, content: data?.content, id: snapshot.id } as TDocumentResult;
+  }
+}
 
 const questionConverter = {
   toFirestore: (question: Question) => {
@@ -51,6 +71,9 @@ const questionConverter = {
   },
 }
 
+const documentCollection = collection(firestoreDb, "documents").withConverter(documentConverter);
+const resultDocumentCollection = collection(firestoreDb, "document_results").withConverter(documentResultConverter);
+const questionCollection = collection(firestoreDb, "questions").withConverter(questionConverter);
 
 export const firebaseDocumentAPI: DocumentAPI = {
   getDocument: async function (documentId: string): Promise<TDocument | null> {
@@ -70,7 +93,6 @@ export const firebaseDocumentAPI: DocumentAPI = {
   },
 
   addQuestion: async function (documentId: string, question: Omit<Question, "id">): Promise<Question> {
-    const questionCollection = collection(firestoreDb, "questions").withConverter(questionConverter);
     const docRef = await addDoc(questionCollection, { ...question, documentId } as Omit<Question, "id">);
     return { ...question, id: docRef.id };
   },
@@ -85,7 +107,7 @@ export const firebaseDocumentAPI: DocumentAPI = {
   },
 
   getQuestionDocuments: async function (questionId: string): Promise<TDocument[]> {
-    const q = query(collection(firestoreDb, "documents"), where("questionId", "==", questionId)).withConverter(documentConverter);
+    const q = query(documentCollection, where("questionId", "==", questionId))
     const documentSnapshot = await getDocs(q);
     const documents: TDocument[] = [];
     documentSnapshot.forEach((doc) => {
@@ -95,11 +117,27 @@ export const firebaseDocumentAPI: DocumentAPI = {
   },
 
   createNewDoc: async function (name: string, questionId: string): Promise<TDocument> {
-    if (!questionId) throw 'Question must be present to create a document.'
-
-    const documentCollection = collection(firestoreDb, "documents").withConverter(documentConverter);
+    if (!questionId) throw 'Question must be present to create a document.';
     const content = "[]";
-    const result = await addDoc(documentCollection, { name, questionId, content: "[]" } as TDocument);
-    return { id: result.id, name, questionId, content }
+    const resultDocument = doc(resultDocumentCollection);
+    console.log(resultDocument, )
+    const document = await addDoc(documentCollection, { name, questionId, content, resultId: resultDocument.id } as TDocument);
+    console.log(document, )
+    await setDoc(resultDocument, { content: '[]', documentId: document.id, id: resultDocument.id })
+    return { id: document.id, name, questionId, content, resultId: resultDocument.id };
+  },
+
+  updateDocumentResult: function (documentResultId: string, content: string): Promise<void> {
+     const documentResultReference = doc(firestoreDb, "document_results", documentResultId).withConverter(documentResultConverter);
+    return updateDoc(documentResultReference, {
+      content
+    });
+  },
+
+  getDocumentResult: async function (documentResultId: string): Promise<TDocumentResult | null> {
+    const documentResultReference = doc(firestoreDb, "document_results", documentResultId).withConverter(documentResultConverter);
+    const documentResultSnapshot = await getDoc(documentResultReference);
+    if (!documentResultSnapshot.exists()) return null;
+    return documentResultSnapshot.data();
   }
 }

@@ -72,7 +72,7 @@ export const WorkspaceLayout = () => {
               </div>
 
 
-              <div className="group-hover:block hidden hover:block absolute top-0.5 right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-hidden px-2" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabIndex={-1} >
+              <div className="group-hover:block hidden hover:block absolute top-0.5 right-0 z-30 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-hidden px-2" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabIndex={-1} >
                 <div className="py-1" role="none">
                   {/* <!-- Active: "bg-gray-100 text-gray-900 outline-hidden", Not Active: "text-gray-700" --> */}
                   <a href="#" className="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabIndex={-1} id="menu-item-0">Account settings</a>
