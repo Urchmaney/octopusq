@@ -1,4 +1,4 @@
-import { BlockNoteSchema, createBlockSpecFromStronglyTypedTiptapNode, createStronglyTypedTiptapNode, defaultBlockSpecs, defaultProps } from "@blocknote/core";
+import { BlockNoteSchema, createBlockSpecFromStronglyTypedTiptapNode, defaultBlockSpecs, defaultProps } from "@blocknote/core";
 import { Cement, CementRulesSpec } from "./cement";
 import { DOMNode } from "@tiptap/core";
 
