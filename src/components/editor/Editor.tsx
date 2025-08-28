@@ -7,7 +7,7 @@ import { useEffect, useMemo, useState } from "react";
 import { firebaseDocumentAPI, TDocument } from "../../services/documentApi";
 import { DocumentEditor } from "./documentEditor";
 import { Card, CardContent, CardHeader, CardTitle } from "../card/Card";
-import { CircleChevronLeft, Loader2, X } from "lucide-react";
+import { CircleChevronLeft, CircleChevronRight, Loader2 } from "lucide-react";
 import "@blocknote/mantine/style.css";
 import { useActiveDocument } from "../../contexts/activeDocumentContext";
 
@@ -78,7 +78,7 @@ export function Editor() {
         ${isDrawerOpen ? "translate-x-0" : "translate-x-full"}`}>
 
         <div className="flex justify-end">
-          <button onClick={() => setDrawerOpen(false)}><X className="text-red-300" /></button>
+          <button onClick={() => setDrawerOpen(false)}><CircleChevronRight className="text-black" /></button>
         </div>
         <div>
           

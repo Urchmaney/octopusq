@@ -1,6 +1,6 @@
 import { Block, BlockNoteEditor, BlocksChanged, BlockSchemaFromSpecs, InlineContentSchema, PartialBlock, StyleSchema } from "@blocknote/core";
 import { debounce } from "../../utils";
-import { schema } from "./schema";
+import { resultSchema, schema } from "./schema";
 import { DocumentAPI, firebaseDocumentAPI, TDocument } from "../../services/documentApi";
 
 export class DocumentEditor {
@@ -12,11 +12,10 @@ export class DocumentEditor {
 	constructor(initialContent: PartialBlock[], private documentId: string) {
 		if (!Array.isArray(initialContent) || initialContent.length === 0) initialContent = [{ type: "paragraph", content: '' }];
 		this._blocknoteEditor = BlockNoteEditor.create({ initialContent, schema });
-		this._resultEditor = BlockNoteEditor.create({ })
+		this._resultEditor = BlockNoteEditor.create({ schema: resultSchema, initialContent: [{ type: 'paragraph', content: ''}] })
 		this.updateDocument = this.updateDocument.bind(this);
 		const debounceUpdateDocument = debounce(this.updateDocument, 500);
 		this._blocknoteEditor.onChange((editor) => debounceUpdateDocument(editor.document));
-
 	}
 
 	sanitizedDocument(document: Block[]) {
