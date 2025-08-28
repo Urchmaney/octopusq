@@ -4,7 +4,6 @@ import { DefaultReactSuggestionItem, getDefaultReactSlashMenuItems, SuggestionMe
 import { schema } from "./schema";
 import { insertCementItem } from "./commands";
 import { useEffect, useMemo, useState } from "react";
-import { firebaseDocumentAPI, TDocument } from "../../services/documentApi";
 import { DocumentEditor } from "./documentEditor";
 import { Card, CardContent, CardHeader, CardTitle } from "../card/Card";
 import { CircleChevronLeft, CircleChevronRight, Loader2 } from "lucide-react";
@@ -22,25 +21,16 @@ const getCustomSlashMenuItems = (
 
 export function Editor() {
   const [isDrawerOpen, setDrawerOpen] = useState(false);
-  const [document, setDocument] = useState<TDocument | null>(null);
 
   const { activeDocument: documentId } = useActiveDocument();
 
   const docEditor = useMemo(() => {
-    return new DocumentEditor([], "")
+    return new DocumentEditor([], "", "")
   }, [])
 
-
   useEffect(() => {
-    firebaseDocumentAPI.getDocument(documentId).then(x => {
-      if (!x) return;
-      setDocument(x);
-    })
-  }, [documentId]);
-
-  useEffect(() => {
-    if (document) docEditor.changeDocument(document)
-  }, [document])
+    if (documentId) docEditor.changeDocument(documentId)
+  }, [documentId])
 
   if (!docEditor.blocknoteEditor) {
     return (
@@ -74,7 +64,7 @@ export function Editor() {
           onClick={() => setDrawerOpen(true)}
         ><CircleChevronLeft /></div>
       }
-      {<div className={`w-1/2 top-0 right-0 border-2 border-amber-500 absolute h-full bg-white z-50 p-6 transform transition-transform duration-300 ease-in-out
+      {<div className={`w-1/2 top-0 right-0 border-2 border-amber-500 absolute h-full bg-white z-10 p-6 transform transition-transform duration-300 ease-in-out
         ${isDrawerOpen ? "translate-x-0" : "translate-x-full"}`}>
 
         <div className="flex justify-end">

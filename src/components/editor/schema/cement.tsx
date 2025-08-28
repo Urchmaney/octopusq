@@ -190,8 +190,7 @@ const specklePlugin: Plugin<DecorationSet> = new Plugin({
     apply(tr, value, __, newState) {
       let documentId: string;
       if (!(documentId = tr.getMeta(createCementKey))) return value;
-      console.log(documentId)
-
+      
       if (documentId === "end") return DecorationSet.create(newState.doc, []);
 
 
