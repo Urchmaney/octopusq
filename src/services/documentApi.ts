@@ -75,10 +75,13 @@ const documentCollection = collection(firestoreDb, "documents").withConverter(do
 const resultDocumentCollection = collection(firestoreDb, "document_results").withConverter(documentResultConverter);
 const questionCollection = collection(firestoreDb, "questions").withConverter(questionConverter);
 
+const getDocumentReference = (id: string) => doc(firestoreDb, "documents", id).withConverter(documentConverter);
+const getResultDocumentReference = (id: string) => doc(firestoreDb, "document_results", id).withConverter(documentResultConverter);
+const getQuestionReference = (id: string) => doc(firestoreDb, "questions", id).withConverter(questionConverter);
+
 export const firebaseDocumentAPI: DocumentAPI = {
   getDocument: async function (documentId: string): Promise<TDocument | null> {
-    const documentReference = doc(firestoreDb, "documents", documentId).withConverter(documentConverter);
-    const docSnapshot = await getDoc(documentReference);
+    const docSnapshot = await getDoc(getDocumentReference(documentId));
     if (docSnapshot.exists()) {
       return docSnapshot.data();
     }
@@ -86,8 +89,7 @@ export const firebaseDocumentAPI: DocumentAPI = {
   },
 
   updateDocument: async function (documentId: string, document: Partial<TDocument>): Promise<void> {
-    const documentReference = doc(firestoreDb, "documents", documentId).withConverter(documentConverter);
-    return updateDoc(documentReference, {
+    return updateDoc(getDocumentReference(documentId), {
       ...document
     });
   },
@@ -98,8 +100,7 @@ export const firebaseDocumentAPI: DocumentAPI = {
   },
 
   getQuestion: async function (questionId: string): Promise<Question | null> {
-    const questionReference = doc(firestoreDb, "questions", questionId).withConverter(questionConverter);
-    const questionSnapshot = await getDoc(questionReference);
+    const questionSnapshot = await getDoc(getQuestionReference(questionId));
     if (questionSnapshot.exists()) {
       return questionSnapshot.data();
     }
@@ -120,23 +121,19 @@ export const firebaseDocumentAPI: DocumentAPI = {
     if (!questionId) throw 'Question must be present to create a document.';
     const content = "[]";
     const resultDocument = doc(resultDocumentCollection);
-    console.log(resultDocument, )
     const document = await addDoc(documentCollection, { name, questionId, content, resultId: resultDocument.id } as TDocument);
-    console.log(document, )
     await setDoc(resultDocument, { content: '[]', documentId: document.id, id: resultDocument.id })
     return { id: document.id, name, questionId, content, resultId: resultDocument.id };
   },
 
   updateDocumentResult: function (documentResultId: string, content: string): Promise<void> {
-     const documentResultReference = doc(firestoreDb, "document_results", documentResultId).withConverter(documentResultConverter);
-    return updateDoc(documentResultReference, {
+    return updateDoc(getResultDocumentReference(documentResultId), {
       content
     });
   },
 
   getDocumentResult: async function (documentResultId: string): Promise<TDocumentResult | null> {
-    const documentResultReference = doc(firestoreDb, "document_results", documentResultId).withConverter(documentResultConverter);
-    const documentResultSnapshot = await getDoc(documentResultReference);
+    const documentResultSnapshot = await getDoc(getResultDocumentReference(documentResultId));
     if (!documentResultSnapshot.exists()) return null;
     return documentResultSnapshot.data();
   }
