@@ -1,15 +1,16 @@
 import { BlockNoteSchema, createBlockSpecFromStronglyTypedTiptapNode, defaultBlockSpecs, defaultProps } from "@blocknote/core";
-import { Cement, CementRulesSpec } from "./cement";
+import { cementSpec, CementRulesSpec } from "./cement";
 import { DOMNode } from "@tiptap/core";
+import { DocumentEditor } from "../documentEditor";
 
 
-export const schema = BlockNoteSchema.create({
+export const schema = (docEditor: DocumentEditor) => BlockNoteSchema.create({
   blockSpecs: {
     // Adds all default blocks.
     ...defaultBlockSpecs,
     // absoluteBlock: AbsoluteBlock,
     cementRules: CementRulesSpec,
-    cement: Cement,
+    cement: cementSpec(docEditor),
     oparagraph: createBlockSpecFromStronglyTypedTiptapNode(
       defaultBlockSpecs["paragraph"].implementation.node.extend({
         name: "oparagraph",

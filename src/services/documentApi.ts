@@ -20,12 +20,14 @@ export interface Question {
   content: string;
   documentId: string;
   activeFwdDocumentId: string;
+  activeFwdDocumentResultId?: string;
 }
 export interface DocumentAPI {
   getDocument: (documentId: string) => Promise<TDocument | null>;
   updateDocument: (documentId: string, document: Partial<TDocument>) => Promise<void>;
   addQuestion: (documentId: string, question: Omit<Question, "id">) => Promise<Question>;
   getQuestion: (questionId: string) => Promise<Question | null>;
+  setQuestionActiveDocument: (questionId: string, document: TDocument) => Promise<void>;
   getQuestionDocuments: (questionId: string) => Promise<TDocument[]>;
   createNewDoc: (name: string, questionId: string) => Promise<TDocument>;
 
@@ -63,11 +65,12 @@ const questionConverter = {
       content: question.content,
       documentId: question.documentId,
       activeFwdDocumentId: question.activeFwdDocumentId,
+      activeFwdDocumentResultId: question.activeFwdDocumentResultId
     };
   },
   fromFirestore: (snapshot: DocumentSnapshot) => {
     const data = snapshot.data();
-    return { documentId: data?.documentId, activeFwdDocumentId: data?.activeFwdDocumentId, content: data?.content, id: snapshot.id } as Question;
+    return { documentId: data?.documentId, activeFwdDocumentId: data?.activeFwdDocumentId, content: data?.content, id: snapshot.id, activeFwdDocumentResultId: data?.activeFwdDocumentResultId } as Question;
   },
 }
 
@@ -108,7 +111,7 @@ export const firebaseDocumentAPI: DocumentAPI = {
   },
 
   getQuestionDocuments: async function (questionId: string): Promise<TDocument[]> {
-    const q = query(documentCollection, where("questionId", "==", questionId))
+    const q = query(documentCollection, where("questionId", "==", questionId));
     const documentSnapshot = await getDocs(q);
     const documents: TDocument[] = [];
     documentSnapshot.forEach((doc) => {
@@ -122,7 +125,7 @@ export const firebaseDocumentAPI: DocumentAPI = {
     const content = "[]";
     const resultDocument = doc(resultDocumentCollection);
     const document = await addDoc(documentCollection, { name, questionId, content, resultId: resultDocument.id } as TDocument);
-    await setDoc(resultDocument, { content: '[]', documentId: document.id, id: resultDocument.id })
+    await setDoc(resultDocument, { content: '[]', documentId: document.id, id: resultDocument.id });
     return { id: document.id, name, questionId, content, resultId: resultDocument.id };
   },
 
@@ -136,5 +139,8 @@ export const firebaseDocumentAPI: DocumentAPI = {
     const documentResultSnapshot = await getDoc(getResultDocumentReference(documentResultId));
     if (!documentResultSnapshot.exists()) return null;
     return documentResultSnapshot.data();
+  },
+  setQuestionActiveDocument: async function (questionId: string, document: TDocument): Promise<void> {
+    await updateDoc(getQuestionReference(questionId), { activeFwdDocumentId: document.id });
   }
 }

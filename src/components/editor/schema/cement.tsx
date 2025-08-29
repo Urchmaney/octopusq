@@ -7,17 +7,18 @@ import { Decoration, DecorationSet } from "prosemirror-view";
 import { MdAdd, MdArrowDropDown, MdCancel, MdFilePresent } from "react-icons/md";
 import { firebaseDocumentAPI, Question, TDocument } from "../../../services/documentApi";
 import { Input, SecondaryButton } from "../../../components";
-import { FormEventHandler, useState } from "react";
+import { FormEventHandler, useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { Link } from "react-router";
 import { useActiveDocument } from "../../../contexts/activeDocumentContext";
+import { DocumentEditor } from "../documentEditor";
 
 // import "./styles.css";
 
 export const createCementKey = new PluginKey("createCementKey");
 
 
-export const Cement = createReactBlockSpec(
+export const cementSpec = (docEditor: DocumentEditor) => createReactBlockSpec(
   {
     type: "cement",
     propSchema: {
@@ -46,6 +47,22 @@ export const Cement = createReactBlockSpec(
       const [fetchedDocs, setFetchedDocs] = useState(false);
       const [creatingDoc, setCreatingDoc] = useState(false);
       const [question, setQuestion] = useState<Question | null>(null);
+
+      useEffect(() => {
+        const fetchQuestionAndAnswer = async () => {
+          const question = await firebaseDocumentAPI.getQuestion(props.block.props.questionId);
+          setQuestion(question);
+          if (!question?.activeFwdDocumentId) return;
+          const activeDoc = await firebaseDocumentAPI.getDocument(question.activeFwdDocumentId);
+
+          if (!activeDoc?.resultId) return;
+          const resultContent = (await firebaseDocumentAPI.getDocumentResult(activeDoc.resultId))?.content || "[]";
+          const resultBlocks = props.editor.insertBlocks(JSON.parse(resultContent), props.block.id, 'after');
+          docEditor.addExcludedBlocksId(...resultBlocks.map(x=> x.id))
+        }
+        fetchQuestionAndAnswer()
+      }, [])
+
       const { setActiveDocument: setActiveDocumentId } = useActiveDocument();
       const toggleCement = () => {
         const show = props.block.props.show;
@@ -55,8 +72,8 @@ export const Cement = createReactBlockSpec(
       const fetchFwdDocs = async () => {
         if (fetchedDocs) return;
         const docs = await firebaseDocumentAPI.getQuestionDocuments(props.block.props.questionId);
-        const question = await firebaseDocumentAPI.getQuestion(props.block.props.questionId);
-        setQuestion(question);
+        // const question = await firebaseDocumentAPI.getQuestion(props.block.props.questionId);
+        // setQuestion(question);
         setFwdDocs(docs);
         setFetchedDocs(true);
       };
@@ -68,9 +85,11 @@ export const Cement = createReactBlockSpec(
         setActiveDocumentId(document.id);
       }
 
-      const activateDocument = (documentId: string) => {
+      const activateDocument = async (documentId: string) => {
         const document = fwdDocs.find(x => x.id === documentId);
         if (!document) return;
+
+        await firebaseDocumentAPI.setQuestionActiveDocument(props.block.props.questionId, document)
       }
 
       const createNewFwdDoc: FormEventHandler<HTMLFormElement> = async (event) => {
@@ -190,7 +209,7 @@ const specklePlugin: Plugin<DecorationSet> = new Plugin({
     apply(tr, value, __, newState) {
       let documentId: string;
       if (!(documentId = tr.getMeta(createCementKey))) return value;
-      
+
       if (documentId === "end") return DecorationSet.create(newState.doc, []);
 
 

@@ -1,4 +1,4 @@
-import { Block, BlockNoteEditor, BlocksChanged, BlockSchemaFromSpecs, InlineContentSchema, PartialBlock, StyleSchema } from "@blocknote/core";
+import { Block, BlockNoteEditor, BlocksChanged, BlockSchemaFromSpecs, BlockSpecs, InlineContentSchema, PartialBlock, StyleSchema } from "@blocknote/core";
 import { debounce } from "../../utils";
 import { resultSchema, schema } from "./schema";
 import { DocumentAPI, firebaseDocumentAPI, TDocument, TDocumentResult } from "../../services/documentApi";
@@ -14,7 +14,7 @@ export class DocumentEditor {
 
   constructor(initialContent: PartialBlock[], private documentId: string, private documentResultId: string) {
     if (!Array.isArray(initialContent) || initialContent.length === 0) initialContent = [{ type: "paragraph", content: '' }];
-    this._blocknoteEditor = BlockNoteEditor.create({ initialContent, schema });
+    this._blocknoteEditor = BlockNoteEditor.create({ initialContent, schema: schema(this) });
     this._resultEditor = BlockNoteEditor.create({ schema: resultSchema, initialContent: [{ type: 'paragraph', content: '' }] });
 
     this.updateDocument = this.updateDocument.bind(this);
@@ -38,7 +38,7 @@ export class DocumentEditor {
     await this.documentApi.updateDocumentResult(this.documentResultId, JSON.stringify(document))
   }
 
-  cementToParagraphWithoutAttr(editor: BlockNoteEditor<any, any, any>, { getChanges }: { getChanges: () => BlocksChanged<BlockSchemaFromSpecs<typeof schema.blockSpecs>, InlineContentSchema, StyleSchema> }) {
+  cementToParagraphWithoutAttr(editor: BlockNoteEditor<any, any, any>, { getChanges }: { getChanges: () => BlocksChanged<BlockSchemaFromSpecs<BlockSpecs>, InlineContentSchema, StyleSchema> }) {
     const changes = getChanges();
     changes.forEach(change => {
       if (change.block.type === "cement" && !(change.block.props as any).question && (change.block?.content as any)?.length || 0 > 0) {
