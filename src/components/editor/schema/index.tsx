@@ -9,7 +9,7 @@ export const schema = (docEditor: DocumentEditor) => BlockNoteSchema.create({
     // Adds all default blocks.
     ...defaultBlockSpecs,
     // absoluteBlock: AbsoluteBlock,
-    cementRules: CementRulesSpec,
+    cementRules: CementRulesSpec(docEditor),
     cement: cementSpec(docEditor),
     oparagraph: createBlockSpecFromStronglyTypedTiptapNode(
       defaultBlockSpecs["paragraph"].implementation.node.extend({
