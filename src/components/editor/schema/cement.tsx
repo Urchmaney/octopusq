@@ -5,7 +5,7 @@ import { Node } from "@tiptap/core";
 import { Plugin, PluginKey } from "prosemirror-state";
 import { Decoration, DecorationSet } from "prosemirror-view";
 import { MdAdd, MdArrowDropDown, MdCancel, MdFilePresent } from "react-icons/md";
-import { firebaseDocumentAPI, Question, TDocument } from "../../../services/documentApi";
+import { Question, TDocument } from "../../../services/documentApi";
 import { Input, SecondaryButton } from "../../../components";
 import { FormEventHandler, useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
@@ -50,15 +50,15 @@ export const cementSpec = (docEditor: DocumentEditor) => createReactBlockSpec(
 
       useEffect(() => {
         const fetchQuestionAndAnswer = async () => {
-          const question = await firebaseDocumentAPI.getQuestion(props.block.props.questionId);
+          const question = await docEditor.documentApi.getQuestion(props.block.props.questionId);
           setQuestion(question);
           if (!question?.activeFwdDocumentId) return;
-          const activeDoc = await firebaseDocumentAPI.getDocument(question.activeFwdDocumentId);
+          const activeDoc = await docEditor.documentApi.getDocument(question.activeFwdDocumentId);
 
           if (!activeDoc?.resultId) return;
-          const resultContent = (await firebaseDocumentAPI.getDocumentResult(activeDoc.resultId))?.content || "[]";
+          const resultContent = (await docEditor.documentApi.getDocumentResult(activeDoc.resultId))?.content || "[]";
           const resultBlocks = props.editor.insertBlocks(JSON.parse(resultContent), props.block.id, 'after');
-          docEditor.addExcludedBlocksId(...resultBlocks.map(x=> x.id))
+          docEditor.addExcludedBlocksId(...resultBlocks.map(x => x.id))
         }
         fetchQuestionAndAnswer()
       }, [])
@@ -71,9 +71,7 @@ export const cementSpec = (docEditor: DocumentEditor) => createReactBlockSpec(
 
       const fetchFwdDocs = async () => {
         if (fetchedDocs) return;
-        const docs = await firebaseDocumentAPI.getQuestionDocuments(props.block.props.questionId);
-        // const question = await firebaseDocumentAPI.getQuestion(props.block.props.questionId);
-        // setQuestion(question);
+        const docs = await docEditor.documentApi.getQuestionDocuments(props.block.props.questionId);
         setFwdDocs(docs);
         setFetchedDocs(true);
       };
@@ -89,7 +87,7 @@ export const cementSpec = (docEditor: DocumentEditor) => createReactBlockSpec(
         const document = fwdDocs.find(x => x.id === documentId);
         if (!document) return;
 
-        await firebaseDocumentAPI.setQuestionActiveDocument(props.block.props.questionId, document)
+        await docEditor.documentApi.setQuestionActiveDocument(props.block.props.questionId, document)
       }
 
       const createNewFwdDoc: FormEventHandler<HTMLFormElement> = async (event) => {
@@ -98,7 +96,7 @@ export const cementSpec = (docEditor: DocumentEditor) => createReactBlockSpec(
           setCreatingDoc(true);
           const form = event.target as HTMLFormElement;
           const formData = new FormData(form);
-          const doc = await firebaseDocumentAPI.createNewDoc(formData.get("docName")?.toString() || "Untitled", props.block.props.questionId);
+          const doc = await docEditor.documentApi.createNewDoc(formData.get("docName")?.toString() || "Untitled", props.block.props.questionId);
           setFwdDocs([doc, ...fwdDocs]);
           form.reset();
         } catch (err) {
@@ -201,88 +199,94 @@ export const cementPlugin = new Plugin({
   }
 })
 
-const specklePlugin: Plugin<DecorationSet> = new Plugin({
-  state: {
-    init(_, { doc }) {
-      return DecorationSet.create(doc, []);
+const specklePlugin: (docEditor: DocumentEditor) => Plugin<DecorationSet> = (docEditor: DocumentEditor) => {
+  const plugin: Plugin<DecorationSet> = new Plugin({
+    state: {
+      init(_, { doc }) {
+        return DecorationSet.create(doc, []);
+      },
+      apply(tr, value, __, newState) {
+        let documentId: string;
+        if (!(documentId = tr.getMeta(createCementKey))) return value;
+
+        if (documentId === "end") return DecorationSet.create(newState.doc, []);
+
+
+        return DecorationSet.create(newState.doc, [
+          Decoration.widget(tr.selection.anchor, (view, getPos) => {
+            const div = document.createElement("div");
+            const form = document.createElement("form");
+
+            const input = document.createElement("input");
+            const documentInput = document.createElement("input");
+            const button = document.createElement("button");
+            div.appendChild(documentInput);
+            div.appendChild(input)
+            div.appendChild(button);
+            form.appendChild(div);
+            documentInput.setAttribute('type', 'hidden');
+            documentInput.value = documentId;
+            button.textContent = "submit"
+            button.type = "submit";
+            input.name = "questionInput"
+            input.type = "text";
+            input.placeholder = "question";
+            input.className = "question-input";
+            input.style.padding = "4px";
+            input.style.margin = "0 4px";
+            input.style.border = "1px solid #ccc";
+            input.style.borderRadius = "4px";
+
+            form.addEventListener("submit", (event: SubmitEvent) => {
+              event.preventDefault();
+              button.textContent = "submitting..."
+              docEditor.documentApi.addQuestion(documentInput.value, {
+                content: input.value,
+                activeFwdDocumentId: "",
+                documentId: documentInput.value
+              }).then(x => {
+                if (!x) return;
+
+                const blockInfo = getBlockInfo(getNearestBlockPos(view.state.doc, getPos()!));
+
+                const block = nodeToBlock(blockInfo.bnBlock.node, view.state.doc.type.schema);
+                tr.setMeta(createCementKey, "end");
+                removeAndInsertBlocks(tr, [block.id], [
+                  {
+                    type: "cement",
+                    props: {
+                      "questionId": x.id,
+                      "show": true,
+                      "question": x.content
+                    } as any
+                  }
+                ]);
+                view.dispatch(tr)
+              }).catch((err: any) => console.log("error creating question", err))
+            })
+            return form;
+          },
+            {
+              side: 0,
+              stopEvent(_) {
+                return true;
+              },
+            })
+        ])
+
+      }
     },
-    apply(tr, value, __, newState) {
-      let documentId: string;
-      if (!(documentId = tr.getMeta(createCementKey))) return value;
-
-      if (documentId === "end") return DecorationSet.create(newState.doc, []);
-
-
-      return DecorationSet.create(newState.doc, [
-        Decoration.widget(tr.selection.anchor, (view, getPos) => {
-          const div = document.createElement("div");
-          const form = document.createElement("form");
-
-          const input = document.createElement("input");
-          const documentInput = document.createElement("input");
-          const button = document.createElement("button");
-          div.appendChild(documentInput);
-          div.appendChild(input)
-          div.appendChild(button);
-          form.appendChild(div);
-          documentInput.setAttribute('type', 'hidden');
-          documentInput.value = documentId;
-          button.textContent = "submit"
-          button.type = "submit";
-          input.name = "questionInput"
-          input.type = "text";
-          input.placeholder = "question";
-          input.className = "question-input";
-          input.style.padding = "4px";
-          input.style.margin = "0 4px";
-          input.style.border = "1px solid #ccc";
-          input.style.borderRadius = "4px";
-
-          form.addEventListener("submit", (event: SubmitEvent) => {
-            event.preventDefault();
-            button.textContent = "submitting..."
-            firebaseDocumentAPI.addQuestion(documentInput.value, {
-              content: input.value,
-              activeFwdDocumentId: "",
-              documentId: documentInput.value
-            }).then(x => {
-              const blockInfo = getBlockInfo(getNearestBlockPos(view.state.doc, getPos()!));
-
-              const block = nodeToBlock(blockInfo.bnBlock.node, view.state.doc.type.schema);
-              tr.setMeta(createCementKey, "end");
-              removeAndInsertBlocks(tr, [block.id], [
-                {
-                  type: "cement",
-                  props: {
-                    "questionId": x.id,
-                    "show": true,
-                    "question": x.content
-                  } as any
-                }
-              ]);
-              view.dispatch(tr)
-            }).catch((err: any) => console.log("error creating question", err))
-          })
-          return form;
-        },
-          {
-            side: 0,
-            stopEvent(_) {
-              return true;
-            },
-          })
-      ])
-
+    props: {
+      decorations(state) { return plugin.getState(state) }
     }
-  },
-  props: {
-    decorations(state) { return specklePlugin.getState(state) }
-  }
-})
+  })
+
+  return plugin;
+}
 
 
 
-export const CementRulesSpec = createBlockSpecFromStronglyTypedTiptapNode(
+export const CementRulesSpec = (docEditor: DocumentEditor) => createBlockSpecFromStronglyTypedTiptapNode(
   Node.create({
     name: "cementRules",
     content: "",
@@ -321,7 +325,7 @@ export const CementRulesSpec = createBlockSpecFromStronglyTypedTiptapNode(
       }
     },
     addProseMirrorPlugins() {
-      return [cementPlugin, specklePlugin]
+      return [cementPlugin, specklePlugin(docEditor)]
     }
   }),
   {}

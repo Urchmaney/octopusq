@@ -4,7 +4,7 @@ import { resultSchema, schema } from "./schema";
 import { DocumentAPI, firebaseDocumentAPI, TDocument, TDocumentResult } from "../../services/documentApi";
 
 export class DocumentEditor {
-  private documentApi: DocumentAPI = firebaseDocumentAPI;
+  public documentApi: DocumentAPI = firebaseDocumentAPI;
   private _blocknoteEditor: BlockNoteEditor<any, any, any>;
   private _resultEditor: BlockNoteEditor<any, any, any>;
   private excludedBlocksId: Set<string> = new Set<string>();
