@@ -1,7 +1,6 @@
-import { BlockNoteEditor, filterSuggestionItems, InlineContentSchema, StyleSchema } from "@blocknote/core";
+import { BlockNoteEditor, filterSuggestionItems } from "@blocknote/core";
 import { BlockNoteView } from "@blocknote/mantine";
 import { DefaultReactSuggestionItem, getDefaultReactSlashMenuItems, SuggestionMenuController } from "@blocknote/react";
-import { schema } from "./schema";
 import { insertCementItem } from "./commands";
 import { useEffect, useMemo, useState } from "react";
 import { DocumentEditor } from "./documentEditor";
@@ -12,7 +11,7 @@ import { useActiveDocument } from "../../contexts/activeDocumentContext";
 
 
 const getCustomSlashMenuItems = (
-  editor: BlockNoteEditor<typeof schema.blockSchema, InlineContentSchema, StyleSchema>,
+  editor: BlockNoteEditor,
   documentId: string
 ): DefaultReactSuggestionItem[] => [
     ...getDefaultReactSlashMenuItems(editor),
@@ -58,20 +57,20 @@ export function Editor() {
         />
       </BlockNoteView>}
 
-      { !isDrawerOpen && 
+      {!isDrawerOpen &&
         <div
           className="absolute top-0 right-0 text-black"
           onClick={() => setDrawerOpen(true)}
-        ><CircleChevronLeft /></div>
+        ><CircleChevronLeft className="cursor-pointer" /></div>
       }
       {<div className={`w-1/2 top-0 right-0 border-2 border-amber-500 absolute h-full bg-white z-10 p-6 transform transition-transform duration-300 ease-in-out
         ${isDrawerOpen ? "translate-x-0" : "translate-x-full"}`}>
 
         <div className="flex justify-end">
-          <button onClick={() => setDrawerOpen(false)}><CircleChevronRight className="text-black" /></button>
+          <button onClick={() => setDrawerOpen(false)}><CircleChevronRight className="text-black cursor-pointer" /></button>
         </div>
         <div>
-          
+
         </div>
         {docEditor.resultEditor && <BlockNoteView editor={docEditor.resultEditor} slashMenu={false}>
           <SuggestionMenuController

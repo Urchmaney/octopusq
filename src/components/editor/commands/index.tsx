@@ -1,10 +1,9 @@
-import { BlockNoteEditor, InlineContentSchema, StyleSchema } from "@blocknote/core";
-import { schema } from "../schema";
+import { BlockNoteEditor } from "@blocknote/core";
 import { createCementKey } from "../schema/cement";
 import { Link } from "lucide-react";
 
 export const insertCementItem =
-  (editor: BlockNoteEditor<typeof schema.blockSchema, InlineContentSchema, StyleSchema>,
+  (editor: BlockNoteEditor,
     documentId: string
   ) => ({
     title: "Cement",
