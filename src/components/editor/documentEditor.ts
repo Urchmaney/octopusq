@@ -91,4 +91,12 @@ export class DocumentEditor {
   addExcludedBlocksId(...ids: string[]) {
     ids.forEach(id => this.excludedBlocksId.add(id));
   }
+
+  convertBlocksToNonEditableVersion(blocks: PartialBlock<any, any, any>[]): PartialBlock<any, any, any>[] {
+    const convertedBlocks = blocks.map(x => ({...x, type: `o_${x.type}`}));
+    const lastContent = convertedBlocks[convertedBlocks.length - 1];
+    if ((!lastContent.content || !(lastContent.content as []).length) && !lastContent.children?.length) convertedBlocks.splice(-1, 1);
+
+    return convertedBlocks
+  }
 }

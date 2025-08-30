@@ -57,7 +57,7 @@ export const cementSpec = (docEditor: DocumentEditor) => createReactBlockSpec(
 
           if (!activeDoc?.resultId) return;
           const resultContent = (await docEditor.documentApi.getDocumentResult(activeDoc.resultId))?.content || "[]";
-          const resultBlocks = props.editor.insertBlocks(JSON.parse(resultContent), props.block.id, 'after');
+          const resultBlocks = props.editor.insertBlocks(docEditor.convertBlocksToNonEditableVersion(JSON.parse(resultContent)) as any, props.block.id, 'after');
           docEditor.addExcludedBlocksId(...resultBlocks.map(x => x.id))
         }
         fetchQuestionAndAnswer()
