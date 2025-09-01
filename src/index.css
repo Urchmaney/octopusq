@@ -162,6 +162,44 @@ button:focus-visible {
   }
 } */
 
+[data-content-type="o_heading"] {
+  --level: 3em;
+}
+[data-content-type="o_heading"][data-level="2"] {
+  --level: 2em;
+}
+[data-content-type="o_heading"][data-level="3"] {
+  --level: 1.3em;
+}
+[data-content-type="o_heading"][data-level="4"] {
+  --level: 1em;
+}
+[data-content-type="o_heading"][data-level="5"] {
+  --level: 0.9em;
+}
+[data-content-type="o_heading"][data-level="6"] {
+  --level: 0.8em;
+}
+
+.bn-block-outer[data-prev-type="o_heading"] > .bn-block > .bn-block-content {
+  font-size: var(--prev-level);
+  font-weight: bold;
+}
+
+.bn-block-outer:not([data-prev-type])
+  > .bn-block
+  > .bn-block-content[data-content-type="o_heading"],
+.bn-block-outer:not([data-prev-type])
+  > .bn-block
+  > div[data-type="modification"]
+  > div[data-type="modification"]
+  > .bn-block-content[data-content-type="o_heading"] {
+  font-size: var(--level);
+  font-weight: bold;
+}
+
+
+
 .alert {
   display: flex;
   justify-content: center;
