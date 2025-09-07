@@ -1,6 +1,6 @@
 import { createBrowserRouter } from "react-router";
 import { AuthLayout, Login, Register } from "../auth";
-import { Workspace } from "../../components";
+// import { Workspace } from "../../components";
 import { Dashboard, Projects, WorkspaceLayout } from "../workspace";
 import { WorkspaceAction, loginAction, registerAction } from "./actions";
 import { WorkspaceLoader } from "./loaders";
