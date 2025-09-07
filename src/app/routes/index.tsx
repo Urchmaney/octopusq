@@ -1,9 +1,10 @@
 import { createBrowserRouter } from "react-router";
 import { AuthLayout, Login, Register } from "../auth";
 // import { Workspace } from "../../components";
-import { Dashboard, Projects, WorkspaceLayout } from "../workspace";
+import { Dashboard, Projects, WorkspaceLayout, EditorPage } from "../workspace";
 import { WorkspaceAction, loginAction, registerAction } from "./actions";
 import { WorkspaceLoader } from "./loaders";
+
 
 export default createBrowserRouter([
   // {
@@ -38,6 +39,10 @@ export default createBrowserRouter([
             Component: Dashboard,
             hydrateFallbackElement: <>loading</>
           },
+          {
+            path: "editor",
+            Component: EditorPage
+          }
         ]
       }
     ]
