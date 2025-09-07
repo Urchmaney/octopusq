@@ -6,13 +6,41 @@ import { WorkspaceAction, loginAction, registerAction } from "./actions";
 import { WorkspaceLoader } from "./loaders";
 
 export default createBrowserRouter([
+  // {
+  //   path: "/",
+  //   element: (
+  //     <Workspace>
+  //       <p>Show me love</p>
+  //     </Workspace>
+  //   )
+  // },
   {
     path: "/",
-    element: (
-      <Workspace>
-        <p>Show me love</p>
-      </Workspace>
-    )
+    Component: WorkspaceLayout,
+    action: WorkspaceAction,
+    loader: WorkspaceLoader,
+    children: [
+      {
+        path: "workspaces?/:workspaceId?",
+        children: [
+          {
+            path: "dashboard",
+            Component: Dashboard,
+            hydrateFallbackElement: <>loading</>
+          },
+          {
+            path: "projects",
+            Component: Projects,
+            hydrateFallbackElement: <>loading</>
+          },
+          {
+            index: true,
+            Component: Dashboard,
+            hydrateFallbackElement: <>loading</>
+          },
+        ]
+      }
+    ]
   },
   {
     path: "auth",
@@ -31,28 +59,5 @@ export default createBrowserRouter([
 
     ]
   },
-  {
-    path: "workspaces/:workspaceId?",
-    Component: WorkspaceLayout,
-    action: WorkspaceAction,
-    loader: WorkspaceLoader,
-    children: [
-      {
-        path: "dashboard",
-        Component: Dashboard,
-        hydrateFallbackElement: <>loading</>
-      },
-      {
-        path: "projects",
-        Component: Projects,
-        hydrateFallbackElement: <>loading</>
-      },
-      {
-        index: true,
-        Component: Dashboard,
-        hydrateFallbackElement: <>loading</>
-      },
-    ]
-  }
 ]);
 
