@@ -1,4 +1,4 @@
-import { addDoc, collection, doc, DocumentSnapshot, getDoc, getDocs, query, setDoc, updateDoc, where } from "firebase/firestore/lite";
+import { addDoc, arrayUnion, collection, doc, documentId, DocumentSnapshot, getDoc, getDocs, limit, query, setDoc, updateDoc, where } from "firebase/firestore/lite";
 import { firestoreDb } from "./firebase";
 
 export interface TDocument {
@@ -7,6 +7,7 @@ export interface TDocument {
   content: string;
   questionId: string;
   resultId: string;
+  parentIds?: string[];
 }
 
 export interface TDocumentResult {
@@ -33,6 +34,10 @@ export interface DocumentAPI {
 
   getDocumentResult: (documentResultId: string) => Promise<TDocumentResult | null>;
   updateDocumentResult: (documentResultId: string, content: string) => Promise<void>;
+
+  getFavoriteDocs: () => Promise<TDocument[]>
+  addDocToFavorite: (docId: string) => Promise<void>;
+
 }
 
 const documentConverter = {
@@ -77,6 +82,7 @@ const questionConverter = {
 const documentCollection = collection(firestoreDb, "documents").withConverter(documentConverter);
 const resultDocumentCollection = collection(firestoreDb, "document_results").withConverter(documentResultConverter);
 const questionCollection = collection(firestoreDb, "questions").withConverter(questionConverter);
+const favoriteCollection = collection(firestoreDb, "favorites");
 
 const getDocumentReference = (id: string) => doc(firestoreDb, "documents", id).withConverter(documentConverter);
 const getResultDocumentReference = (id: string) => doc(firestoreDb, "document_results", id).withConverter(documentResultConverter);
@@ -140,7 +146,32 @@ export const firebaseDocumentAPI: DocumentAPI = {
     if (!documentResultSnapshot.exists()) return null;
     return documentResultSnapshot.data();
   },
+
   setQuestionActiveDocument: async function (questionId: string, document: TDocument): Promise<void> {
     await updateDoc(getQuestionReference(questionId), { activeFwdDocumentId: document.id });
+  },
+
+  getFavoriteDocs: async function (): Promise<TDocument[]> {
+    const firstDocumentQuery = query(favoriteCollection, limit(1));
+    const documentSnapshot = await getDocs(firstDocumentQuery);
+    if (documentSnapshot.empty) return [];
+
+    const favoritesIds = documentSnapshot.docs[0].data().data as Array<string>;
+    const docsQuery = query(documentCollection, where(documentId(), 'in', favoritesIds));
+
+    const querySnapshot = await getDocs(docsQuery);
+    const documents: TDocument[] = [];
+    querySnapshot.forEach((doc) => documents.push(doc.data()));
+    return documents;
+  },
+
+  addDocToFavorite: async function (docId: string): Promise<void> {
+    const firstDocumentQuery = query(favoriteCollection, limit(1));
+    const documentSnapshot = await getDocs(firstDocumentQuery);
+    if (documentSnapshot.empty) return;
+
+    const ref = doc(favoriteCollection, documentSnapshot.docs[0].id);
+    await updateDoc(ref, { data: arrayUnion(docId) });
+    return;
   }
 }
