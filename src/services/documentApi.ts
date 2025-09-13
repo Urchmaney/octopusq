@@ -7,7 +7,7 @@ export interface TDocument {
   content: string;
   questionId: string;
   resultId: string;
-  parentIds?: string[];
+  parentQuestionIds: string[];
 }
 
 export interface TDocumentResult {
@@ -30,7 +30,7 @@ export interface DocumentAPI {
   getQuestion: (questionId: string) => Promise<Question | null>;
   setQuestionActiveDocument: (questionId: string, document: TDocument) => Promise<void>;
   getQuestionDocuments: (questionId: string) => Promise<TDocument[]>;
-  createNewDoc: (name: string, questionId: string) => Promise<TDocument>;
+  createNewDoc: (name: string, questionId: string, parentQuestionIds: Array<string>) => Promise<TDocument>;
 
   getDocumentResult: (documentResultId: string) => Promise<TDocumentResult | null>;
   updateDocumentResult: (documentResultId: string, content: string) => Promise<void>;
@@ -45,11 +45,12 @@ const documentConverter = {
     name: doc.name,
     content: doc.content,
     questionId: doc.questionId,
-    resultId: doc.resultId
+    resultId: doc.resultId,
+    parentIds: doc.parentQuestionIds
   }),
   fromFirestore: (snapshot: DocumentSnapshot) => {
     const data = snapshot.data();
-    return { name: data?.name, content: data?.content, id: snapshot.id, resultId: data?.resultId } as TDocument;
+    return { name: data?.name, content: data?.content, id: snapshot.id, resultId: data?.resultId, parentQuestionIds: data?.parentQuestionIds } as TDocument;
   },
 };
 
@@ -126,13 +127,14 @@ export const firebaseDocumentAPI: DocumentAPI = {
     return documents;
   },
 
-  createNewDoc: async function (name: string, questionId: string): Promise<TDocument> {
+  createNewDoc: async function (name: string, questionId: string, parentQuestionIds: Array<string>): Promise<TDocument> {
     if (!questionId) throw 'Question must be present to create a document.';
     const content = "[]";
     const resultDocument = doc(resultDocumentCollection);
-    const document = await addDoc(documentCollection, { name, questionId, content, resultId: resultDocument.id } as TDocument);
+    parentQuestionIds = [...parentQuestionIds, questionId];
+    const document = await addDoc(documentCollection, { name, questionId, content, resultId: resultDocument.id, parentQuestionIds } as TDocument);
     await setDoc(resultDocument, { content: '[]', documentId: document.id, id: resultDocument.id });
-    return { id: document.id, name, questionId, content, resultId: resultDocument.id };
+    return { id: document.id, name, questionId, content, parentQuestionIds, resultId: resultDocument.id };
   },
 
   updateDocumentResult: function (documentResultId: string, content: string): Promise<void> {
