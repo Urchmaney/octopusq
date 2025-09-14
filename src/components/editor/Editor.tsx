@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../card/Card";
 import { CircleChevronLeft, CircleChevronRight, Loader2 } from "lucide-react";
 import "@blocknote/mantine/style.css";
 import { useActiveDocument } from "../../contexts/activeDocumentContext";
+import Path from "../path/Path";
 
 
 const getCustomSlashMenuItems = (
@@ -45,45 +46,48 @@ export function Editor() {
     );
   }
   return (
-    <div className="bg-white h-full relative overflow-x-hidden">
-      {docEditor.blocknoteEditor && <BlockNoteView editor={docEditor.blocknoteEditor} slashMenu={false}>
-        <SuggestionMenuController
-          triggerCharacter={"/"}
-          // Replaces the default Slash Menu items with our custom ones.
-          getItems={async (query) => {
-            return filterSuggestionItems(getCustomSlashMenuItems(docEditor.blocknoteEditor as any, documentId), query);
-          }
-          }
-        />
-      </BlockNoteView>}
-
-      {!isDrawerOpen &&
-        <div
-          className="absolute top-0 right-0 text-black"
-          onClick={() => setDrawerOpen(true)}
-        ><CircleChevronLeft className="cursor-pointer" /></div>
-      }
-      {<div className={`w-1/2 top-0 right-0 border-2 border-amber-500 absolute h-full bg-white z-10 p-6 transform transition-transform duration-300 ease-in-out
-        ${isDrawerOpen ? "translate-x-0" : "translate-x-full"}`}>
-
-        <div className="flex justify-end">
-          <button onClick={() => setDrawerOpen(false)}><CircleChevronRight className="text-black cursor-pointer" /></button>
-        </div>
-        <div>
-
-        </div>
-        {docEditor.resultEditor && <BlockNoteView editor={docEditor.resultEditor} slashMenu={false}>
+    <div>
+      <Path compact/>
+      <div className="bg-white h-full relative overflow-x-hidden">
+        {docEditor.blocknoteEditor && <BlockNoteView editor={docEditor.blocknoteEditor} slashMenu={false}>
           <SuggestionMenuController
             triggerCharacter={"/"}
             // Replaces the default Slash Menu items with our custom ones.
             getItems={async (query) => {
-              return filterSuggestionItems(getCustomSlashMenuItems(docEditor.resultEditor as any, documentId), query);
+              return filterSuggestionItems(getCustomSlashMenuItems(docEditor.blocknoteEditor as any, documentId), query);
             }
             }
           />
         </BlockNoteView>}
+
+        {!isDrawerOpen &&
+          <div
+            className="absolute top-0 right-0 text-black"
+            onClick={() => setDrawerOpen(true)}
+          ><CircleChevronLeft className="cursor-pointer" /></div>
+        }
+        {<div className={`w-1/2 top-0 right-0 border-2 border-amber-500 absolute h-full bg-white z-10 p-6 transform transition-transform duration-300 ease-in-out
+        ${isDrawerOpen ? "translate-x-0" : "translate-x-full"}`}>
+
+          <div className="flex justify-end">
+            <button onClick={() => setDrawerOpen(false)}><CircleChevronRight className="text-black cursor-pointer" /></button>
+          </div>
+          <div>
+
+          </div>
+          {docEditor.resultEditor && <BlockNoteView editor={docEditor.resultEditor} slashMenu={false}>
+            <SuggestionMenuController
+              triggerCharacter={"/"}
+              // Replaces the default Slash Menu items with our custom ones.
+              getItems={async (query) => {
+                return filterSuggestionItems(getCustomSlashMenuItems(docEditor.resultEditor as any, documentId), query);
+              }
+              }
+            />
+          </BlockNoteView>}
+        </div>
+        }
       </div>
-      }
     </div>
   );
 }

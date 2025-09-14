@@ -4,3 +4,5 @@ export * from "./container/Container";
 export * from "./card/Card";
 export * from "./button/Button";
 export * from "./modal/Modal";
+export * from "./editor/Editor";
+export * from "./path/Path";
