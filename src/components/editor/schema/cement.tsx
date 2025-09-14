@@ -96,7 +96,12 @@ export const cementSpec = (docEditor: DocumentEditor) => createReactBlockSpec(
           setCreatingDoc(true);
           const form = event.target as HTMLFormElement;
           const formData = new FormData(form);
-          const doc = await docEditor.documentApi.createNewDoc(formData.get("docName")?.toString() || "Untitled", props.block.props.questionId);
+          const currentDoc = await docEditor.document;
+          const doc = await docEditor.documentApi.createNewDoc(
+            formData.get("docName")?.toString() || "Untitled",
+            props.block.props.questionId,
+            (currentDoc)?.parentQuestionIds || []
+          );
           setFwdDocs([doc, ...fwdDocs]);
           form.reset();
         } catch (err) {
