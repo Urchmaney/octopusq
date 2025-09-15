@@ -82,10 +82,11 @@ export class DocumentEditor {
   }
 
   async changeDocument(documentId: string) {
+    if (documentId === this.documentId) return;
     this.documentId = documentId;
     this._blocknoteEditor.replaceBlocks(this._blocknoteEditor.document, JSON.parse((await this.document)?.content || '[]'));
     this.documentResultId = (await this.document)?.resultId || '';
-    this._resultEditor.replaceBlocks(this._resultEditor.document, JSON.parse((await this.resultDocument)?.content || '[]'));
+    if (this.documentResultId) this._resultEditor.replaceBlocks(this._resultEditor.document, JSON.parse((await this.resultDocument)?.content || '[]'));
   }
 
   addExcludedBlocksId(...ids: string[]) {
