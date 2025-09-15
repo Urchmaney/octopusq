@@ -1,4 +1,4 @@
-import { Editor } from "../../components/editor/Editor";
+import { Editor } from "../../components";
 import { ActiveDocumentProvider } from "../../contexts/activeDocumentContext";
 
 export function EditorPage() {
