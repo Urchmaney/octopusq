@@ -9,6 +9,7 @@ import { CircleChevronLeft, CircleChevronRight, Loader2 } from "lucide-react";
 import "@blocknote/mantine/style.css";
 import { useActiveDocument } from "../../contexts/activeDocumentContext";
 import Path from "../path/Path";
+import { TDocument } from "../../services/documentApi";
 
 
 const getCustomSlashMenuItems = (
@@ -23,13 +24,20 @@ export function Editor() {
   const [isDrawerOpen, setDrawerOpen] = useState(false);
 
   const { activeDocument: documentId } = useActiveDocument();
+  const [path, setPath] = useState<Array<string>>([]);
 
   const docEditor = useMemo(() => {
     return new DocumentEditor([], "", "")
   }, [])
 
   useEffect(() => {
-    if (documentId) docEditor.changeDocument(documentId)
+    if (documentId) {
+      docEditor.changeDocument(documentId);
+      if (!docEditor.document) return;
+      (docEditor.document as Promise<TDocument>).then(x => {
+        setPath(x.parentQuestionIds)
+      })
+    }
   }, [documentId])
 
   if (!docEditor.blocknoteEditor) {
@@ -45,9 +53,14 @@ export function Editor() {
       </Card>
     );
   }
+
+  const getQuestionName = async (id: string) => {
+    return docEditor.getQuestionName(id);
+  }
+
   return (
     <div>
-      <Path compact/>
+      <Path compact eventIds={path} getEventName={getQuestionName} />
       <div className="bg-white h-full relative overflow-x-hidden">
         {docEditor.blocknoteEditor && <BlockNoteView editor={docEditor.blocknoteEditor} slashMenu={false}>
           <SuggestionMenuController

@@ -1,7 +1,7 @@
 import { Block, BlockNoteEditor, BlocksChanged, BlockSchemaFromSpecs, BlockSpecs, InlineContentSchema, PartialBlock, StyleSchema } from "@blocknote/core";
 import { debounce } from "../../utils";
 import { resultSchema, schema } from "./schema";
-import { DocumentAPI, firebaseDocumentAPI, TDocument, TDocumentResult } from "../../services/documentApi";
+import { DocumentAPI, firebaseDocumentAPI, Question, TDocument, TDocumentResult } from "../../services/documentApi";
 
 export class DocumentEditor {
   public documentApi: DocumentAPI = firebaseDocumentAPI;
@@ -11,6 +11,7 @@ export class DocumentEditor {
 
   private _document: TDocument | null = null;
   private _documentResult: TDocumentResult | null = null;
+  private _questionsCache: Record<string, Question | null> = Object.create(null);
 
   constructor(initialContent: PartialBlock[], private documentId: string, private documentResultId: string) {
     if (!Array.isArray(initialContent) || initialContent.length === 0) initialContent = [{ type: "paragraph", content: '' }];
@@ -60,6 +61,7 @@ export class DocumentEditor {
   }
 
   get document() {
+    if (!this.documentId) return null;
     if (this.documentId === this._document?.id) return this._document;
 
     const result = async () => {
@@ -79,6 +81,15 @@ export class DocumentEditor {
       return this._documentResult;
     }
     return result();
+  }
+
+  async getQuestionName(id: string): Promise<string> {
+    const question = this._questionsCache[id];
+    if(question !== undefined) return question?.content || "not found";
+
+    const result = await this.documentApi.getQuestion(id);
+    this._questionsCache[id] = result
+    return result?.content || "not found";
   }
 
   async changeDocument(documentId: string) {
