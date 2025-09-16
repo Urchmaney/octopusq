@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
 
-interface Event {
-  id: number;
-  title: string;
-  isCurrent?: boolean
-}
+// interface Event {
+//   id: number;
+//   title: string;
+//   isCurrent?: boolean
+// }
 
 
 export default function Path({ compact = false, eventIds, getEventName }: { compact: boolean, eventIds: string[], getEventName: (eventId: string) => Promise<string> }) {
   const [isOpen, setIsOpen] = useState(true);
-  const [currentId, setCurrentId] = useState<string | undefined>(undefined);
+  const [currentId, _] = useState<string | undefined>(undefined);
   const [events, setEvents] = useState<Record<string, string | undefined>>({});
 
   useEffect(() => {
