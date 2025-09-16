@@ -1,37 +1,52 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-interface Event {
-  id: number;
-  title: string;
-  isCurrent?: boolean
-}
+// interface Event {
+//   id: number;
+//   title: string;
+//   isCurrent?: boolean
+// }
 
 
-export default function Path({ compact = false }) {
+export default function Path({ compact = false, eventIds, getEventName }: { compact: boolean, eventIds: string[], getEventName: (eventId: string) => Promise<string> }) {
   const [isOpen, setIsOpen] = useState(true);
+  const [currentId, _] = useState<string | undefined>(undefined);
+  const [events, setEvents] = useState<Record<string, string | undefined>>({});
+
+  useEffect(() => {
+    if (!eventIds) setEvents({});
+    else if (Array.isArray(eventIds)) setEvents(Object.fromEntries(eventIds.map(id => [id, undefined])));
+  }, [eventIds]);
+
+  const eventName = (id: string) => {
+    if (events[id]) return events[id];
+
+    getEventName(id).then(name => setEvents(events => ({ ...events, [id]: name })));
+    
+    return "loading";
+  }
   const nodeSize = compact ? 'w-6 h-6' : 'w-8 h-8';
   const nodeInner = compact ? 'w-3 h-3' : 'w-4 h-4';
 
-  const events: Event[] = [
-    { id: 1, title: 'Question A just make it show' },
-    { id: 2, title: 'Question B' },
-    { id: 3, title: 'Question C', },
-    { id: 4, title: 'Question D', },
-    { id: 5, title: 'Question E', isCurrent: true },
-    { id: 6, title: 'Question A just make it show' },
-    { id: 7, title: 'Question B' },
-    { id: 8, title: 'Question C', },
-    { id: 9, title: 'Question D', },
-    { id: 10, title: 'Question A just make it show' },
-    { id: 11, title: 'Question B' },
-    { id: 12, title: 'Question C', },
-    { id: 13, title: 'Question D', },
-    { id: 14, title: 'Question C', },
-    { id: 15, title: 'Question D', },
-    { id: 16, title: 'Question D', },
-    { id: 17, title: 'Question C', },
-    { id: 18, title: 'Question D', },
-  ]
+  // const events: Event[] = [
+  //   { id: 1, title: 'Question A just make it show' },
+  //   { id: 2, title: 'Question B' },
+  //   { id: 3, title: 'Question C', },
+  //   { id: 4, title: 'Question D', },
+  //   { id: 5, title: 'Question E', isCurrent: true },
+  //   { id: 6, title: 'Question A just make it show' },
+  //   { id: 7, title: 'Question B' },
+  //   { id: 8, title: 'Question C', },
+  //   { id: 9, title: 'Question D', },
+  //   { id: 10, title: 'Question A just make it show' },
+  //   { id: 11, title: 'Question B' },
+  //   { id: 12, title: 'Question C', },
+  //   { id: 13, title: 'Question D', },
+  //   { id: 14, title: 'Question C', },
+  //   { id: 15, title: 'Question D', },
+  //   { id: 16, title: 'Question D', },
+  //   { id: 17, title: 'Question C', },
+  //   { id: 18, title: 'Question D', },
+  // ]
 
   return (
     <div className="w-full px-6 py-4 border rounded-lg shadow-sm bg-white">
@@ -58,13 +73,13 @@ export default function Path({ compact = false }) {
 
           {/* Nodes */}
           <div className="relative z-10 flex items-center justify-between gap-4">
-            {events.map((event) => (
-              <div key={event.id} className="group flex-1 flex items-center justify-center relative">
+            {Object.keys(events).map((id) => (
+              <div key={id} className="group flex-1 flex items-center justify-center relative">
                 {/* Tooltip shown on hover */}
                 <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 pointer-events-none">
                   <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 ease-out select-none">
                     <div className="mb-1 text-sm text-black text-center px-2 py-1 rounded-md shadow-lg bg-white border border-gray-100 whitespace-nowrap">
-                      {event.title}
+                      {eventName(id)}
                     </div>
                     <div className="w-0 h-0 mx-auto border-l-6 border-l-transparent border-r-6 border-r-transparent border-t-6 border-t-white -mt-1" />
                   </div>
@@ -73,20 +88,20 @@ export default function Path({ compact = false }) {
 
                 {/* Node button */}
                 <button
-                  aria-current={event.isCurrent ? 'true' : 'false'}
-                  className={`relative flex items-center justify-center ${nodeSize} rounded-full transition-transform transform focus:outline-none focus:ring-2 focus:ring-offset-2 ${event.isCurrent ? 'bg-green-400 ring-4 ring-green-200 scale-105' : 'bg-white border-2 border-gray-300 hover:scale-110'}`}
-                  title={event.title}
+                  aria-current={currentId === id ? 'true' : 'false'}
+                  className={`relative flex items-center justify-center ${nodeSize} rounded-full transition-transform transform focus:outline-none focus:ring-2 focus:ring-offset-2 ${currentId === id ? 'bg-green-400 ring-4 ring-green-200 scale-105' : 'bg-white border-2 border-gray-300 hover:scale-110'}`}
+                  title={eventName(id)}
                 // onClick={() => {
                 //   if (typeof event.onClick === 'function') event.onClick(event);
                 // }}
                 >
-                  <span className={`${nodeInner} rounded-full ${event.isCurrent ? 'bg-white' : 'bg-gray-400'}`} />
+                  <span className={`${nodeInner} rounded-full ${currentId === id ? 'bg-white' : 'bg-gray-400'}`} />
                 </button>
 
 
                 {/* Optional label under node */}
                 <div className="absolute top-full mt-3 left-1/2 transform -translate-x-1/2 text-xs text-gray-600 hidden sm:block text-center max-w-[6rem] truncate">
-                  {event.title}
+                  {eventName(id)}
                 </div>
               </div>
             ))}
