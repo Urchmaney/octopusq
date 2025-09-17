@@ -58,9 +58,15 @@ export function Editor() {
     return docEditor.getQuestionName(id);
   }
 
+  const openQuestionDocument = async(questionId: string) => {
+    const questionDocId = await docEditor.getQuestionActiveDocumentId(questionId);
+    if (!questionDocId) return;
+    docEditor.changeDocument(questionDocId);
+  }
+
   return (
     <div>
-      <Path compact eventIds={path} getEventName={getQuestionName} />
+      <Path compact eventIds={path} getEventName={getQuestionName} onClickEvent={openQuestionDocument} />
       <div className="bg-white h-full relative overflow-x-hidden">
         {docEditor.blocknoteEditor && <BlockNoteView editor={docEditor.blocknoteEditor} slashMenu={false}>
           <SuggestionMenuController

@@ -1,28 +1,36 @@
 import { useEffect, useState } from "react";
 
-// interface Event {
-//   id: number;
-//   title: string;
-//   isCurrent?: boolean
-// }
+interface PathProps {
+  compact: boolean;
+  eventIds: string[];
+  getEventName: (eventId: string) => Promise<string>
+  onClickEvent?: (eventId: string) => Promise<void>
+}
 
 
-export default function Path({ compact = false, eventIds, getEventName }: { compact: boolean, eventIds: string[], getEventName: (eventId: string) => Promise<string> }) {
+
+
+export default function Path({ compact = false, eventIds, getEventName, onClickEvent }: PathProps) {
   const [isOpen, setIsOpen] = useState(true);
-  const [currentId, _] = useState<string | undefined>(undefined);
+  const [currentId, setCurrentId] = useState<string | undefined>(undefined);
   const [events, setEvents] = useState<Record<string, string | undefined>>({});
 
   useEffect(() => {
-    if (!eventIds) setEvents({});
-    else if (Array.isArray(eventIds)) setEvents(Object.fromEntries(eventIds.map(id => [id, undefined])));
+    if (Array.isArray(eventIds)) {
+      setEvents(Object.fromEntries(eventIds.map(id => [id, undefined])));
+      setCurrentId(eventIds[eventIds.length - 1]);
+    }
   }, [eventIds]);
 
   const eventName = (id: string) => {
     if (events[id]) return events[id];
-
     getEventName(id).then(name => setEvents(events => ({ ...events, [id]: name })));
-    
     return "loading";
+  }
+
+  const clickEvent = async (id: string) => {
+    setCurrentId(id);
+    await onClickEvent?.(id);
   }
   const nodeSize = compact ? 'w-6 h-6' : 'w-8 h-8';
   const nodeInner = compact ? 'w-3 h-3' : 'w-4 h-4';
@@ -89,11 +97,9 @@ export default function Path({ compact = false, eventIds, getEventName }: { comp
                 {/* Node button */}
                 <button
                   aria-current={currentId === id ? 'true' : 'false'}
-                  className={`relative flex items-center justify-center ${nodeSize} rounded-full transition-transform transform focus:outline-none focus:ring-2 focus:ring-offset-2 ${currentId === id ? 'bg-green-400 ring-4 ring-green-200 scale-105' : 'bg-white border-2 border-gray-300 hover:scale-110'}`}
+                  className={`relative flex items-center justify-center ${nodeSize} rounded-full transition-transform transform focus:outline-none focus:ring-2 focus:ring-offset-2 ${currentId === id ? 'bg-green-400 ring-4 ring-green-200 scale-105' : 'bg-white border-2 border-gray-300 hover:scale-110'} cursor-pointer`}
                   title={eventName(id)}
-                // onClick={() => {
-                //   if (typeof event.onClick === 'function') event.onClick(event);
-                // }}
+                  onClick={() => clickEvent(id)}
                 >
                   <span className={`${nodeInner} rounded-full ${currentId === id ? 'bg-white' : 'bg-gray-400'}`} />
                 </button>
