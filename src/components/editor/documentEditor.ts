@@ -12,6 +12,7 @@ export class DocumentEditor {
   private _document: TDocument | null = null;
   private _documentResult: TDocumentResult | null = null;
   private _questionsCache: Record<string, Question | null> = Object.create(null);
+  private _favoritesDocumentCache: { valid: boolean, ids: string[] } = { valid: false, ids: [] };
 
   constructor(initialContent: PartialBlock[], private documentId: string, private documentResultId: string) {
     if (!Array.isArray(initialContent) || initialContent.length === 0) initialContent = [{ type: "paragraph", content: '' }];
@@ -110,6 +111,14 @@ export class DocumentEditor {
     this._blocknoteEditor.replaceBlocks(this._blocknoteEditor.document, JSON.parse((await this.document)?.content || '[]'));
     this.documentResultId = (await this.document)?.resultId || '';
     if (this.documentResultId) this._resultEditor.replaceBlocks(this._resultEditor.document, JSON.parse((await this.resultDocument)?.content || '[]'));
+  }
+
+  async isDocumentInFavorite(documentId: string): Promise<boolean> {
+    if(this._favoritesDocumentCache.valid) return this._favoritesDocumentCache.ids.includes(documentId);
+
+    const docIds = (await this.documentApi.getFavoriteDocs()).map(x=> x.id);
+    this._favoritesDocumentCache = { valid: true, ids: docIds };
+    return docIds.includes(documentId);
   }
 
   addExcludedBlocksId(...ids: string[]) {

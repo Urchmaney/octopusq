@@ -36,8 +36,7 @@ export interface DocumentAPI {
   updateDocumentResult: (documentResultId: string, content: string) => Promise<void>;
 
   getFavoriteDocs: () => Promise<TDocument[]>
-  addDocToFavorite: (docId: string) => Promise<void>;
-
+  addDocToFavorite: (docId: string) => Promise<boolean>;
 }
 
 const documentConverter = {
@@ -167,13 +166,17 @@ export const firebaseDocumentAPI: DocumentAPI = {
     return documents;
   },
 
-  addDocToFavorite: async function (docId: string): Promise<void> {
-    const firstDocumentQuery = query(favoriteCollection, limit(1));
-    const documentSnapshot = await getDocs(firstDocumentQuery);
-    if (documentSnapshot.empty) return;
+  addDocToFavorite: async function (docId: string): Promise<boolean> {
+    try {
+      const firstDocumentQuery = query(favoriteCollection, limit(1));
+      const documentSnapshot = await getDocs(firstDocumentQuery);
+      if (documentSnapshot.empty) return false;
 
-    const ref = doc(favoriteCollection, documentSnapshot.docs[0].id);
-    await updateDoc(ref, { data: arrayUnion(docId) });
-    return;
+      const ref = doc(favoriteCollection, documentSnapshot.docs[0].id);
+      await updateDoc(ref, { data: arrayUnion(docId) });
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 }
