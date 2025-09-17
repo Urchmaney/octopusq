@@ -5,7 +5,7 @@ import { insertCementItem } from "./commands";
 import { useEffect, useMemo, useState } from "react";
 import { DocumentEditor } from "./documentEditor";
 import { Card, CardContent, CardHeader, CardTitle } from "../card/Card";
-import { CircleChevronLeft, CircleChevronRight, Loader2 } from "lucide-react";
+import { CircleChevronLeft, CircleChevronRight, Loader2, Star } from "lucide-react";
 import "@blocknote/mantine/style.css";
 import { useActiveDocument } from "../../contexts/activeDocumentContext";
 import Path from "../path/Path";
@@ -25,6 +25,7 @@ export function Editor() {
 
   const { activeDocument: documentId } = useActiveDocument();
   const [path, setPath] = useState<Array<string>>([]);
+  const [isFavorite, setIsFavorite] = useState<boolean | undefined>(undefined);
 
   const docEditor = useMemo(() => {
     return new DocumentEditor([], "", "")
@@ -35,8 +36,9 @@ export function Editor() {
       docEditor.changeDocument(documentId);
       if (!docEditor.document) return;
       (docEditor.document as Promise<TDocument>).then(x => {
-        setPath(x.parentQuestionIds)
-      })
+        setPath(x.parentQuestionIds);
+        return docEditor.isDocumentInFavorite(x.id);
+      }).then(x => setIsFavorite(x));
     }
   }, [documentId])
 
@@ -64,8 +66,15 @@ export function Editor() {
     docEditor.changeDocument(questionDocId);
   }
 
+  const addDocumentToFavorite = async () => {
+    setIsFavorite(await docEditor.documentApi.addDocToFavorite(documentId))
+  }
+
   return (
     <div>
+      <div className="flex justify-end">
+        <Star className="text-black cursor-pointer" fill={isFavorite === undefined ? "none" : isFavorite ? "yellow" : "gray"} onClick={addDocumentToFavorite} />
+      </div>
       <Path compact eventIds={path} getEventName={getQuestionName} onClickEvent={openQuestionDocument} />
       <div className="bg-white h-full relative overflow-x-hidden">
         {docEditor.blocknoteEditor && <BlockNoteView editor={docEditor.blocknoteEditor} slashMenu={false}>
