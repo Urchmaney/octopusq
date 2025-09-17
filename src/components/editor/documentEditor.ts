@@ -32,6 +32,7 @@ export class DocumentEditor {
   }
 
   async updateDocument(document: any) {
+    if (!this.documentId) return;
     await this.documentApi.updateDocument(this.documentId, { content: JSON.stringify(this.sanitizedDocument(document)) });
   }
 
@@ -83,18 +84,29 @@ export class DocumentEditor {
     return result();
   }
 
-  async getQuestionName(id: string): Promise<string> {
-    const question = this._questionsCache[id];
-    if(question !== undefined) return question?.content || "not found";
+  private async getQuestion(questionId: string): Promise<Question | null> {
+    const question = this._questionsCache[questionId];
+    if (question !== undefined) return question;
 
-    const result = await this.documentApi.getQuestion(id);
-    this._questionsCache[id] = result
-    return result?.content || "not found";
+    const result = await this.documentApi.getQuestion(questionId);
+    this._questionsCache[questionId] = result
+    return result;
+  }
+
+  async getQuestionName(questionId: string): Promise<string> {
+    const question = await this.getQuestion(questionId);
+    return question?.content || "not found";
+  }
+
+  async getQuestionActiveDocumentId(questionId: string): Promise<string> {
+    const question = await this.getQuestion(questionId);
+    return question?.activeFwdDocumentId || "";
   }
 
   async changeDocument(documentId: string) {
     if (documentId === this.documentId) return;
     this.documentId = documentId;
+
     this._blocknoteEditor.replaceBlocks(this._blocknoteEditor.document, JSON.parse((await this.document)?.content || '[]'));
     this.documentResultId = (await this.document)?.resultId || '';
     if (this.documentResultId) this._resultEditor.replaceBlocks(this._resultEditor.document, JSON.parse((await this.resultDocument)?.content || '[]'));
