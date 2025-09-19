@@ -7,7 +7,7 @@ import { ActiveDocumentProvider } from "../../contexts/activeDocumentContext";
 
 const navLinks = [
   { label: "Dashboard", path: (workspaceId: string) => `/workspaces/${workspaceId}/dashboard/`, pattern: "/workspaces/:workspaceId?/dashboard?" },
-  { label: "Project", path: (workspaceId: string) => `/workspaces/${workspaceId}/projects/`, pattern: "/workspaces/:workspaceId?/projects" },
+  { label: "Project", path: (workspaceId: string) => `/projects/${workspaceId}`, pattern: "/projects/:workspaceId" },
   { label: "My Task", path: (workspaceId: string) => `/workspaces/${workspaceId}/tasks/`, pattern: "/workspaces/:workspaceId?/tasks" },
   { label: "Settings", path: (workspaceId: string) => `/workspaces/${workspaceId}/settings/`, pattern: "/workspaces/:workspaceId?/settings" },
 ];
@@ -25,12 +25,16 @@ export const WorkspaceLayout = () => {
   const [activeWorkspace, setActiveWorkspace] = useState<Workspace>(workspaces.find(x => x.id === Number(workspaceId)) || workspaces[0]);
   const [createWorkspace, setCreateWorkspace] = useState<boolean>(false);
 
+  const openProject = (workspace: Workspace) => {
+    setActiveWorkspace(workspace);
+    navigate(`/projects/${workspace.id}`)
+  }
 
   useEffect(() => {
     if (data) {
       setCreateWorkspace(false);
       setActiveWorkspace(data)
-      navigate(navLinks[0].path(data.id), { replace: true });
+      navigate(navLinks[1].path(data.id), { replace: true });
     }
   }, [data]);
 
@@ -50,7 +54,7 @@ export const WorkspaceLayout = () => {
             </div>
           </nav>
           <div className="mt-auto p-4 border-t border-white/10">
-            <Workspace workspaces={workspaces} activeWorkspace={activeWorkspace} onCreateWorkspace={() => setCreateWorkspace(true)} onClickWorkspace={(workspace: Workspace) => setActiveWorkspace(workspace)} />
+            <Workspace workspaces={workspaces} activeWorkspace={activeWorkspace} onCreateWorkspace={() => setCreateWorkspace(true)} onClickWorkspace={openProject} />
           </div>
         </aside>
 
@@ -98,13 +102,13 @@ export const WorkspaceLayout = () => {
           createWorkspace &&
           <Modal onClose={() => setCreateWorkspace(false)}>
             <div>
-              <fetcher.Form className="flex flex-col gap-5" action={`/workspaces/${activeWorkspace?.id}`} method="post">
+              <fetcher.Form className="flex flex-col gap-5" method="post">
                 <input type="hidden" name="action_type" value={"create_workspace"} />
                 <div>
                   <Input
                     name="workspace_name"
                     type="text"
-                    placeholder="Workspace Name"
+                    placeholder="Workspace Question"
                     className="border-0 border-b text-black border-gray-200 bg-transparent px-0 py-2 focus-visible:border-[#1a4b53] focus-visible:ring-0"
                   />
                 </div>
@@ -169,7 +173,7 @@ function Workspace({ workspaces, activeWorkspace, onClickWorkspace, onCreateWork
           {
             workspaces.map((x, i) => (
               <div key={`workspace_menu_${i}`} onClick={() => clickWorkspace(x)}>
-                <a href="#" className="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabIndex={-1} id="menu-item-0">{x.name}</a>
+                <a className="block px-4 py-2 text-sm text-gray-700 cursor-pointer" role="menuitem" tabIndex={-1} id="menu-item-0">{x.name}</a>
               </div>
             ))
           }

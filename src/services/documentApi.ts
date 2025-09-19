@@ -19,14 +19,15 @@ export interface TDocumentResult {
 export interface Question {
   id: string;
   content: string;
-  documentId: string;
+  documentId: string | null;
   activeFwdDocumentId: string;
   activeFwdDocumentResultId?: string;
 }
 export interface DocumentAPI {
+  getProjects: () => Promise<Question[]>;
   getDocument: (documentId: string) => Promise<TDocument | null>;
   updateDocument: (documentId: string, document: Partial<TDocument>) => Promise<void>;
-  addQuestion: (documentId: string, question: Omit<Question, "id">) => Promise<Question>;
+  addQuestion: (documentId: string | null, question: Omit<Question, "id">) => Promise<Question>;
   getQuestion: (questionId: string) => Promise<Question | null>;
   setQuestionActiveDocument: (questionId: string, document: TDocument) => Promise<void>;
   getQuestionDocuments: (questionId: string) => Promise<TDocument[]>;
@@ -103,7 +104,7 @@ export const firebaseDocumentAPI: DocumentAPI = {
     });
   },
 
-  addQuestion: async function (documentId: string, question: Omit<Question, "id">): Promise<Question> {
+  addQuestion: async function (documentId: string | null, question: Omit<Question, "id">): Promise<Question> {
     const docRef = await addDoc(questionCollection, { ...question, documentId } as Omit<Question, "id">);
     return { ...question, id: docRef.id };
   },
@@ -178,5 +179,15 @@ export const firebaseDocumentAPI: DocumentAPI = {
     } catch (e) {
       return false;
     }
+  },
+  getProjects: async function (): Promise<Question[]> {
+    const q = query(questionCollection, where("documentId", '==', null));
+    const querySnapshot = await getDocs(q);
+    const questions: Question[] = [];
+    querySnapshot.forEach((doc) => {
+      questions.push(doc.data());
+    });
+
+    return questions;
   }
 }
