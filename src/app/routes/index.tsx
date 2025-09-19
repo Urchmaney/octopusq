@@ -2,8 +2,8 @@ import { createBrowserRouter } from "react-router";
 import { AuthLayout, Login, Register } from "../auth";
 // import { Workspace } from "../../components";
 import { Dashboard, Projects, WorkspaceLayout, EditorPage } from "../workspace";
-import { WorkspaceAction, loginAction, registerAction } from "./actions";
-import { WorkspaceLoader } from "./loaders";
+import { AddNewFileDocumentAction, WorkspaceAction, loginAction, registerAction } from "./actions";
+import { ProjectLoader, WorkspaceLoader } from "./loaders";
 
 
 export default createBrowserRouter([
@@ -18,33 +18,30 @@ export default createBrowserRouter([
   {
     path: "/",
     Component: WorkspaceLayout,
-    action: WorkspaceAction,
     loader: WorkspaceLoader,
+    action: WorkspaceAction,
     children: [
       {
-        path: "workspaces?/:workspaceId?",
-        children: [
-          {
-            path: "dashboard",
-            Component: Dashboard,
-            hydrateFallbackElement: <>loading</>
-          },
-          {
-            path: "projects",
-            Component: Projects,
-            hydrateFallbackElement: <>loading</>
-          },
-          {
-            index: true,
-            Component: Dashboard,
-            hydrateFallbackElement: <>loading</>
-          },
-          {
-            path: "editor",
-            Component: EditorPage,
-            hydrateFallbackElement: <>loading</>
-          }
-        ]
+        path: "dashboard",
+        Component: Dashboard,
+        hydrateFallbackElement: <>loading</>
+      },
+      {
+        path: "projects/:id",
+        Component: Projects,
+        hydrateFallbackElement: <>loading</>,
+        loader: ProjectLoader,
+        action: AddNewFileDocumentAction
+      },
+      {
+        index: true,
+        Component: Dashboard,
+        hydrateFallbackElement: <>loading</>,
+      },
+      {
+        path: "editor",
+        Component: EditorPage,
+        hydrateFallbackElement: <>loading</>
       }
     ]
   },

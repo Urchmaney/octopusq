@@ -19,7 +19,7 @@ export function Dashboard() {
   const openFile = (fileId: string) => {
     if(!fileId) return;
     setActiveDocument(fileId);
-    navigate("./workspaces/editor")
+    navigate("./editor")
   }
 
   if(files === null) return (

@@ -1,6 +1,7 @@
 import { ActionFunctionArgs, redirect } from "react-router";
-import { createUserWorkspace, login, logout, register } from "../../services";
+import { login, logout, register } from "../../services";
 import { AxiosError } from "axios";
+import { firebaseDocumentAPI } from "../../services/documentApi";
 
 function handleError(error: unknown) {
   const errors = (error as AxiosError).response?.data || (error as AxiosError).message;
@@ -34,6 +35,24 @@ export async function registerAction({ request }: ActionFunctionArgs) {
   }
 }
 
+// export async function WorkspaceAction({ request }: ActionFunctionArgs) {
+//   const formData = await request.formData();
+//   const actionType = formData.get("action_type");
+//   switch (actionType) {
+//     case "logout":
+//       await logout();
+//       return redirect("/auth/login");
+//     case "create_workspace":
+//       try {
+//         const result = await createUserWorkspace(formData.get("workspace_name") as string);
+//         return { data: result.data };
+//       }catch(e) {
+//         return handleError(e);
+//       }
+//     default:
+//   }
+// }
+
 export async function WorkspaceAction({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
   const actionType = formData.get("action_type");
@@ -43,12 +62,32 @@ export async function WorkspaceAction({ request }: ActionFunctionArgs) {
       return redirect("/auth/login");
     case "create_workspace":
       try {
-        const result = await createUserWorkspace(formData.get("workspace_name") as string);
-        return { data: result.data };
-      }catch(e) {
+        const result = await firebaseDocumentAPI.addQuestion(null, {
+          content: formData.get("workspace_name") as string,
+          documentId: null,
+          activeFwdDocumentId: "",
+          activeFwdDocumentResultId: ""
+        })
+        return { data: result };
+      } catch (e) {
         return handleError(e);
       }
     default:
+  }
+}
+
+export async function AddNewFileDocumentAction({ request }: ActionFunctionArgs) {
+  try {
+    const formData = await request.formData();
+    const document = await firebaseDocumentAPI.createNewDoc(
+      formData.get("file_name") as string,
+      formData.get("question") as string,
+      []
+    );
+    return { data: document, errors: [] };
+  }
+  catch (e) {
+    return handleError(e);
   }
 }
 
