@@ -6,7 +6,7 @@ import { Input, SecondaryButton, Modal } from "../../components";
 import { ActiveDocumentProvider } from "../../contexts/activeDocumentContext";
 
 const navLinks = [
-  { label: "Dashboard", path: (workspaceId: string) => `/workspaces/${workspaceId}/dashboard/`, pattern: "/workspaces/:workspaceId?/dashboard?" },
+  { label: "Dashboard", path: () => `/dashboard/`, pattern: "/dashboard" },
   { label: "Project", path: (workspaceId: string) => `/projects/${workspaceId}`, pattern: "/projects/:workspaceId" },
   { label: "My Task", path: (workspaceId: string) => `/workspaces/${workspaceId}/tasks/`, pattern: "/workspaces/:workspaceId?/tasks" },
   { label: "Settings", path: (workspaceId: string) => `/workspaces/${workspaceId}/settings/`, pattern: "/workspaces/:workspaceId?/settings" },
@@ -59,10 +59,11 @@ export const WorkspaceLayout = () => {
         </aside>
 
         {/* Main Content */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-h-lvh">
           {/* Header */}
           <header className="h-20 bg-white border-b px-6 flex items-center justify-between shadow-sm">
-            <h1 className="text-xl font-semibold text-gray-800">{activeWorkspace?.name || ""}</h1>
+            {/* <h1 className="text-xl font-semibold text-gray-800">{activeWorkspace?.name || ""}</h1> */}
+            <h1 className="text-xl font-semibold text-gray-800"></h1>
             <div className="flex items-center gap-4">
               {/* <input
               type="text"
@@ -94,7 +95,7 @@ export const WorkspaceLayout = () => {
           </header>
 
           {/* Content Area */}
-          <main className="flex-1 p-2 overflow-y-auto">
+          <main className="flex-1 p-2 overflow-y-auto grow">
             <Outlet context={{ activeWorkspace: activeWorkspace?.id } satisfies WorkspaceContext} />
           </main>
         </div>
