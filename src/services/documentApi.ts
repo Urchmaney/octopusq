@@ -46,7 +46,7 @@ const documentConverter = {
     content: doc.content,
     questionId: doc.questionId,
     resultId: doc.resultId,
-    parentIds: doc.parentQuestionIds
+    parentQuestionIds: doc.parentQuestionIds
   }),
   fromFirestore: (snapshot: DocumentSnapshot) => {
     const data = snapshot.data();

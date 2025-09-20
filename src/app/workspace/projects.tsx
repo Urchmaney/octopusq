@@ -17,7 +17,7 @@ export function Projects() {
   const openFile = (fileId: string) => {
     if (!fileId) return;
     setActiveDocument(fileId);
-    navigate("./editor")
+    navigate("../../editor")
   }
 
   useEffect(() => {
