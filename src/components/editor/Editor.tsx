@@ -71,12 +71,12 @@ export function Editor() {
   }
 
   return (
-    <div>
+    <div className="h-full flex flex-col">
       <div className="flex justify-end">
         <Star className="text-black cursor-pointer" fill={isFavorite === undefined ? "none" : isFavorite ? "yellow" : "gray"} onClick={addDocumentToFavorite} />
       </div>
       <Path compact eventIds={path} getEventName={getQuestionName} onClickEvent={openQuestionDocument} />
-      <div className="bg-white h-full relative overflow-x-hidden">
+      <div className="bg-white grow relative overflow-x-hidden">
         {docEditor.blocknoteEditor && <BlockNoteView editor={docEditor.blocknoteEditor} slashMenu={false}>
           <SuggestionMenuController
             triggerCharacter={"/"}
