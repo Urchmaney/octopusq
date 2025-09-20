@@ -39,7 +39,7 @@ export default createBrowserRouter([
         hydrateFallbackElement: <>loading</>,
       },
       {
-        path: "editor",
+        path: "editor/:docId?",
         Component: EditorPage,
         hydrateFallbackElement: <>loading</>
       }

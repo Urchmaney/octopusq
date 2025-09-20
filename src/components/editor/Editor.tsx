@@ -20,16 +20,21 @@ const getCustomSlashMenuItems = (
     insertCementItem(editor, documentId),
   ];
 
-export function Editor() {
+export function Editor({ docId } : { docId?: string }) {
   const [isDrawerOpen, setDrawerOpen] = useState(false);
 
-  const { activeDocument: documentId } = useActiveDocument();
+  const { activeDocument: documentId, setActiveDocument } = useActiveDocument();
+
   const [path, setPath] = useState<Array<string>>([]);
   const [isFavorite, setIsFavorite] = useState<boolean | undefined>(undefined);
 
   const docEditor = useMemo(() => {
     return new DocumentEditor([], "", "")
-  }, [])
+  }, []);
+
+  useEffect(() => {
+    if (docId) setActiveDocument(docId);
+  }, [docId])
 
   useEffect(() => {
     if (documentId) {
