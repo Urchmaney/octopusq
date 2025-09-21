@@ -68,7 +68,7 @@ export async function WorkspaceAction({ request }: ActionFunctionArgs) {
           activeFwdDocumentId: "",
           activeFwdDocumentResultId: ""
         })
-        return { data: result };
+        return { data: { name: result.content, id: result.id} };
       } catch (e) {
         return handleError(e);
       }
