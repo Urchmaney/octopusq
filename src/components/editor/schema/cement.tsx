@@ -4,7 +4,7 @@ import { Menu } from "@mantine/core";
 import { Node } from "@tiptap/core";
 import { Plugin, PluginKey } from "prosemirror-state";
 import { Decoration, DecorationSet } from "prosemirror-view";
-import { MdAdd, MdArrowDropDown, MdCancel, MdFilePresent } from "react-icons/md";
+import { MdAdd, MdArrowDropDown, MdCancel, MdChevronRight, MdFilePresent } from "react-icons/md";
 import { Question, TDocument } from "../../../services/documentApi";
 import { Input, SecondaryButton } from "../../../components";
 import { FormEventHandler, useEffect, useState } from "react";
@@ -165,7 +165,7 @@ export const cementSpec = (docEditor: DocumentEditor) => createReactBlockSpec(
 
                   <MdCancel className="cursor-pointer" onClick={toggleCement} />
                 </div>
-                : <button className="cursor-pointer" onClick={toggleCement}>show</button>
+                : <button className="cursor-pointer" onClick={toggleCement}><MdChevronRight /></button>
             }
           </div>
           {/* 
@@ -248,6 +248,7 @@ const specklePlugin: (docEditor: DocumentEditor) => Plugin<DecorationSet> = (doc
               docEditor.documentApi.addQuestion(documentInput.value, {
                 content: input.value,
                 activeFwdDocumentId: "",
+                activeFwdDocumentResultId: "",
                 documentId: documentInput.value
               }).then(x => {
                 if (!x) return;
