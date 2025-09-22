@@ -1,5 +1,5 @@
 import { useLoaderData, useNavigate, useParams } from "react-router";
-import { Question, TDocument } from "../../services/documentApi";
+import { firebaseDocumentAPI, Question, TDocument } from "../../services/documentApi";
 import { FileText, Loader2, Plus } from "lucide-react";
 import { useActiveDocument } from "../../contexts/activeDocumentContext";
 import { Input } from "../../components";
@@ -27,7 +27,13 @@ export function Projects() {
   }, [id])
 
   useEffect(() => {
-    if(fetcherData && !busy) setFileName('');
+    if (fetcherData && !busy) {
+      setFileName('');
+      if (data.question && !data.question?.activeFwdDocumentId) {
+        firebaseDocumentAPI.setQuestionActiveDocument(data.question.id, fetcherData)
+      }
+    }
+
   }, [fetcherData, busy])
 
   if (!data.question) return (
@@ -39,7 +45,7 @@ export function Projects() {
       <div>
         <fetcher.Form method="POST">
           <div className="text-black flex justify-end items-center gap-3">
-            { busy && <Loader2 className="animate-spin" /> }
+            {busy && <Loader2 className="animate-spin" />}
             <input type="hidden" name="question" value={data.question.id} />
             <Input
               name="file_name"

@@ -9,8 +9,7 @@ import { Question, TDocument } from "../../../services/documentApi";
 import { Input, SecondaryButton } from "../../../components";
 import { FormEventHandler, useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
-import { Link } from "react-router";
-import { useActiveDocument } from "../../../contexts/activeDocumentContext";
+import { Link, useNavigate } from "react-router";
 import { DocumentEditor } from "../documentEditor";
 
 // import "./styles.css";
@@ -48,6 +47,8 @@ export const cementSpec = (docEditor: DocumentEditor) => createReactBlockSpec(
       const [creatingDoc, setCreatingDoc] = useState(false);
       const [question, setQuestion] = useState<Question | null>(null);
 
+      const navigator = useNavigate();
+
       useEffect(() => {
         const fetchQuestionAndAnswer = async () => {
           const question = await docEditor.documentApi.getQuestion(props.block.props.questionId);
@@ -63,7 +64,6 @@ export const cementSpec = (docEditor: DocumentEditor) => createReactBlockSpec(
         fetchQuestionAndAnswer()
       }, [])
 
-      const { setActiveDocument: setActiveDocumentId } = useActiveDocument();
       const toggleCement = () => {
         const show = props.block.props.show;
         props.editor.updateBlock(props.block.id, { props: { show: !show } } as any);
@@ -80,7 +80,7 @@ export const cementSpec = (docEditor: DocumentEditor) => createReactBlockSpec(
         const document = fwdDocs.find(x => x.id === documentId);
         if (!document) return;
 
-        setActiveDocumentId(document.id);
+        navigator(`/editor/${document.id}`);
       }
 
       const activateDocument = async (documentId: string) => {
@@ -103,6 +103,10 @@ export const cementSpec = (docEditor: DocumentEditor) => createReactBlockSpec(
             (currentDoc)?.parentQuestionIds || []
           );
           setFwdDocs([doc, ...fwdDocs]);
+          if (!question?.activeFwdDocumentId) {
+            await docEditor.documentApi.setQuestionActiveDocument(props.block.props.questionId, doc);
+            setQuestion(question => ({...question!, activeFwdDocumentId: doc.id }))
+          }
           form.reset();
         } catch (err) {
           throw err
