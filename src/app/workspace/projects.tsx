@@ -1,15 +1,17 @@
-import { useLoaderData, useNavigate } from "react-router";
+import { useLoaderData, useNavigate, useParams } from "react-router";
 import { Question, TDocument } from "../../services/documentApi";
 import { FileText, Loader2, Plus } from "lucide-react";
 import { useActiveDocument } from "../../contexts/activeDocumentContext";
 import { Input } from "../../components";
-import { useFetcherSumbit } from "../../hooks";
+import { useFetcherSumbit, useWorkspaceContext } from "../../hooks";
 import { useEffect, useState } from "react";
 
 export function Projects() {
 
   const data = useLoaderData() as { question: Question | null, documents: TDocument[] };
   const { setActiveDocument } = useActiveDocument();
+  const { id } = useParams();
+  const { setActiveWorkspace } = useWorkspaceContext();
   const { fetcher, busy, data: fetcherData } = useFetcherSumbit();
   const navigate = useNavigate();
   const [fileName, setFileName] = useState("");
@@ -19,6 +21,10 @@ export function Projects() {
     setActiveDocument(fileId);
     navigate(`../../editor/${fileId}`)
   }
+
+  useEffect(() => {
+    setActiveWorkspace(id || "");
+  }, [id])
 
   useEffect(() => {
     if(fetcherData && !busy) setFileName('');

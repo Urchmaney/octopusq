@@ -12,7 +12,7 @@ const navLinks = [
   { label: "Settings", path: (workspaceId: string) => `/workspaces/${workspaceId}/settings/`, pattern: "/workspaces/:workspaceId?/settings" },
 ];
 
-type Workspace = { id: number, name: string };
+type Workspace = { id: string, name: string };
 type User = { email: string, fullName: string };
 
 export const WorkspaceLayout = () => {
@@ -22,7 +22,7 @@ export const WorkspaceLayout = () => {
   const { fetcher, busy, data } = useFetcherSumbit();
 
 
-  const [activeWorkspace, setActiveWorkspace] = useState<Workspace>(workspaces.find(x => x.id === Number(workspaceId)) || workspaces[0]);
+  const [activeWorkspace, setActiveWorkspace] = useState<Workspace>(workspaces.find(x => x.id === workspaceId) || workspaces[0]);
   const [createWorkspace, setCreateWorkspace] = useState<boolean>(false);
 
   const openProject = (workspace: Workspace) => {
@@ -37,6 +37,13 @@ export const WorkspaceLayout = () => {
       navigate(navLinks[1].path(data.id), { replace: true });
     }
   }, [data]);
+
+  const setActiveWorkspaceFromId = (workspaceId: string) => {
+    const workspace = workspaces.find(x => x.id === workspaceId);
+    if (!workspace) return;
+
+    setActiveWorkspace(workspace);
+  }
 
   return (
     <ActiveDocumentProvider>
@@ -96,7 +103,7 @@ export const WorkspaceLayout = () => {
 
           {/* Content Area */}
           <main className="flex-1 p-2 overflow-y-auto grow">
-            <Outlet context={{ activeWorkspace: activeWorkspace?.id } satisfies WorkspaceContext} />
+            <Outlet context={{ activeWorkspace: activeWorkspace?.id, setActiveWorkspace: setActiveWorkspaceFromId } satisfies WorkspaceContext} />
           </main>
         </div>
         {
@@ -141,7 +148,7 @@ const NavItem = ({ label, path, pattern }: { label: string, path: string, patter
   )
 }
 
-function Workspace({ workspaces, activeWorkspace, onClickWorkspace, onCreateWorkspace }: { workspaces: { id: number, name: string }[], activeWorkspace: { id: number, name: string } | undefined, onCreateWorkspace: () => void, onClickWorkspace: (workspace: Workspace) => void }) {
+function Workspace({ workspaces, activeWorkspace, onClickWorkspace, onCreateWorkspace }: { workspaces: { id: string, name: string }[], activeWorkspace: { id: string, name: string } | undefined, onCreateWorkspace: () => void, onClickWorkspace: (workspace: Workspace) => void }) {
   const [showMenu, setShowMenu] = useState<boolean>(false);
   const menuRef = useClickOutside(() => { setShowMenu(false) });
 
@@ -173,7 +180,7 @@ function Workspace({ workspaces, activeWorkspace, onClickWorkspace, onCreateWork
         <div ref={menuRef as RefObject<HTMLDivElement>} className="flex flex-col gap-2 py-1 px-2" role="none">
           {
             workspaces.map((x, i) => (
-              <div key={`workspace_menu_${i}`} onClick={() => clickWorkspace(x)}>
+              <div key={`workspace_menu_${i}`} onClick={() => clickWorkspace(x)} className={`${x.id === activeWorkspace?.id ? 'bg-[#d4d1ca]' : ''}`}>
                 <a className="block px-4 py-2 text-sm text-gray-700 cursor-pointer" role="menuitem" tabIndex={-1} id="menu-item-0">{x.name}</a>
               </div>
             ))
