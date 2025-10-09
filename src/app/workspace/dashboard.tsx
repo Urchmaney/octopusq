@@ -13,12 +13,13 @@ export function Dashboard() {
     })
   }, [])
 
-  const { setActiveDocument } = useActiveDocument();
+  const { setActiveDocument, setActiveDocumentName } = useActiveDocument();
   const navigate = useNavigate();
 
-  const openFile = (fileId: string) => {
+  const openFile = (fileId: string, fileName: string) => {
     if(!fileId) return;
     setActiveDocument(fileId);
+    setActiveDocumentName(fileName);
     navigate(`../editor/${fileId}`)
   }
 
@@ -32,7 +33,7 @@ export function Dashboard() {
         <div
           key={index}
           className="p-4 border rounded-2xl shadow-sm bg-white flex items-center justify-between relative group cursor-pointer"
-          onClick={() => openFile(file.id)}
+          onClick={() => openFile(file.id, file.name)}
         >
           <div className="flex items-center gap-3">
             <FileText className="w-6 h-6 text-gray-500" />

@@ -23,7 +23,7 @@ const getCustomSlashMenuItems = (
 export function Editor({ docId } : { docId?: string }) {
   const [isDrawerOpen, setDrawerOpen] = useState(false);
 
-  const { activeDocument: documentId, setActiveDocument } = useActiveDocument();
+  const { activeDocument: documentId, setActiveDocument, setActiveDocumentName } = useActiveDocument();
 
   const [path, setPath] = useState<Array<string>>([]);
   const [isFavorite, setIsFavorite] = useState<boolean | undefined>(undefined);
@@ -34,6 +34,10 @@ export function Editor({ docId } : { docId?: string }) {
 
   useEffect(() => {
     if (docId) setActiveDocument(docId);
+    return () => { 
+      setActiveDocument("");
+      setActiveDocumentName("");
+     };
   }, [docId])
 
   useEffect(() => {
@@ -41,10 +45,15 @@ export function Editor({ docId } : { docId?: string }) {
       docEditor.changeDocument(documentId);
       if (!docEditor.document) return;
       (docEditor.document as Promise<TDocument>).then(x => {
-        setPath(x.parentQuestionIds);
+        setActiveDocumentName(x.name);
+        setPath(x.parentQuestionIds || []);
         return docEditor.isDocumentInFavorite(x.id);
       }).then(x => setIsFavorite(x));
     }
+    return () => { 
+      setActiveDocument("");
+      setActiveDocumentName("");
+     };
   }, [documentId])
 
   if (!docEditor.blocknoteEditor) {
@@ -65,10 +74,23 @@ export function Editor({ docId } : { docId?: string }) {
     return docEditor.getQuestionName(id);
   }
 
+  const getDocumentQuestionName = async (docId: string) => {
+    const questionId =  (await docEditor.documentApi.getDocument(docId))?.questionId || "";
+    console.log("Question ID", questionId, docId);
+    return getQuestionName(questionId);
+  }
+
+  const openDocument = async(docId: string) => {
+    if (!docId) return;
+    await docEditor.changeDocument(docId);
+    setActiveDocumentName((await docEditor.document as TDocument).name);
+  }
+
   const openQuestionDocument = async(questionId: string) => {
     const questionDocId = await docEditor.getQuestionActiveDocumentId(questionId);
     if (!questionDocId) return;
-    docEditor.changeDocument(questionDocId);
+    await docEditor.changeDocument(questionDocId);
+    setActiveDocumentName((await docEditor.document as TDocument).name);
   }
 
   const addDocumentToFavorite = async () => {

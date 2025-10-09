@@ -3,7 +3,7 @@ import { RefObject, useEffect, useState } from "react";
 import { Form, Outlet, useLoaderData, useMatch, useNavigate, useParams } from "react-router";
 import { useClickOutside, useFetcherSumbit, type WorkspaceContext } from "../../hooks";
 import { Input, SecondaryButton, Modal } from "../../components";
-import { ActiveDocumentProvider } from "../../contexts/activeDocumentContext";
+import { ActiveDocumentContext } from "../../contexts/activeDocumentContext";
 
 const navLinks = [
   { label: "Dashboard", path: () => `/dashboard/`, pattern: "/dashboard" },
@@ -24,6 +24,8 @@ export const WorkspaceLayout = () => {
 
   const [activeWorkspace, setActiveWorkspace] = useState<Workspace>(workspaces.find(x => x.id === workspaceId) || workspaces[0]);
   const [createWorkspace, setCreateWorkspace] = useState<boolean>(false);
+  const [activeDocument, setActiveDocument] = useState<{ id: string, name: string } | null>(null);
+
 
   const openProject = (workspace: Workspace) => {
     setActiveWorkspace(workspace);
@@ -46,7 +48,17 @@ export const WorkspaceLayout = () => {
   }
 
   return (
-    <ActiveDocumentProvider>
+    <ActiveDocumentContext.Provider value={
+      {
+        activeDocument: activeDocument?.id || "",
+        setActiveDocument: (docId: string) => setActiveDocument((activeDocument) => ({
+          id: docId, name: activeDocument?.name || ""
+        })),
+        activeDocumentName: activeDocument?.name || "",
+        setActiveDocumentName: (name: string) => setActiveDocument((activeDocument) => ({
+          id: activeDocument?.id || "", name
+        }))
+      }}>
       <div className="flex h-screen bg-gray-100">
         {/* Sidebar */}
         <aside className="w-64 bg-primary text-white flex flex-col">
@@ -70,7 +82,7 @@ export const WorkspaceLayout = () => {
           {/* Header */}
           <header className="h-20 bg-white border-b px-6 flex items-center justify-between shadow-sm">
             {/* <h1 className="text-xl font-semibold text-gray-800">{activeWorkspace?.name || ""}</h1> */}
-            <h1 className="text-xl font-semibold text-gray-800"></h1>
+            <h1 className="text-xl font-semibold text-gray-800">{activeDocument?.name || ""}</h1>
             <div className="flex items-center gap-4">
               {/* <input
               type="text"
@@ -131,7 +143,7 @@ export const WorkspaceLayout = () => {
           </Modal>
         }
       </div>
-    </ActiveDocumentProvider>
+    </ActiveDocumentContext.Provider>
   );
 };
 
