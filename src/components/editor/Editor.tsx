@@ -72,17 +72,17 @@ export function Editor({ docId } : { docId?: string }) {
     return docEditor.getQuestionName(id);
   }
 
-  const getDocumentQuestionName = async (docId: string) => {
-    const questionId =  (await docEditor.documentApi.getDocument(docId))?.questionId || "";
-    console.log("Question ID", questionId, docId);
-    return getQuestionName(questionId);
-  }
+  // const getDocumentQuestionName = async (docId: string) => {
+  //   const questionId =  (await docEditor.documentApi.getDocument(docId))?.questionId || "";
+  //   console.log("Question ID", questionId, docId);
+  //   return getQuestionName(questionId);
+  // }
 
-  const openDocument = async(docId: string) => {
-    if (!docId) return;
-    await docEditor.changeDocument(docId);
-    setActiveDocumentName((await docEditor.document as TDocument).name);
-  }
+  // const openDocument = async(docId: string) => {
+  //   if (!docId) return;
+  //   await docEditor.changeDocument(docId);
+  //   setActiveDocumentName((await docEditor.document as TDocument).name);
+  // }
 
   const openQuestionDocument = async(questionId: string) => {
     const questionDocId = await docEditor.getQuestionActiveDocumentId(questionId);
