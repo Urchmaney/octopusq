@@ -35,7 +35,6 @@ export function Editor({ docId } : { docId?: string }) {
   useEffect(() => {
     if (docId) setActiveDocument(docId);
     return () => { 
-      setActiveDocument("");
       setActiveDocumentName("");
      };
   }, [docId])
@@ -51,7 +50,6 @@ export function Editor({ docId } : { docId?: string }) {
       }).then(x => setIsFavorite(x));
     }
     return () => { 
-      setActiveDocument("");
       setActiveDocumentName("");
      };
   }, [documentId])
@@ -94,6 +92,7 @@ export function Editor({ docId } : { docId?: string }) {
   }
 
   const addDocumentToFavorite = async () => {
+    if (!documentId) return;
     setIsFavorite(await docEditor.documentApi.addDocToFavorite(documentId))
   }
 

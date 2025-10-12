@@ -169,6 +169,7 @@ export const firebaseDocumentAPI: DocumentAPI = {
 
   addDocToFavorite: async function (docId: string): Promise<boolean> {
     try {
+      if (!docId) return false;
       const firstDocumentQuery = query(favoriteCollection, limit(1));
       const documentSnapshot = await getDocs(firstDocumentQuery);
       if (documentSnapshot.empty) return false;
