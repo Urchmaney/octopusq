@@ -9,16 +9,17 @@ import { useEffect, useState } from "react";
 export function Projects() {
 
   const data = useLoaderData() as { question: Question | null, documents: TDocument[] };
-  const { setActiveDocument } = useActiveDocument();
+  const { setActiveDocument, setActiveDocumentName } = useActiveDocument();
   const { id } = useParams();
   const { setActiveWorkspace } = useWorkspaceContext();
   const { fetcher, busy, data: fetcherData } = useFetcherSumbit();
   const navigate = useNavigate();
   const [fileName, setFileName] = useState("");
 
-  const openFile = (fileId: string) => {
+  const openFile = (fileId: string, fileName: string) => {
     if (!fileId) return;
     setActiveDocument(fileId);
+    setActiveDocumentName(fileName);
     navigate(`../../editor/${fileId}`)
   }
 
@@ -63,7 +64,7 @@ export function Projects() {
             <div
               key={index}
               className="p-4 border rounded-2xl shadow-sm bg-white flex items-center justify-between relative group cursor-pointer"
-              onClick={() => openFile(file.id)}
+              onClick={() => openFile(file.id, file.name)}
             >
               <div className="flex items-center gap-3">
                 <FileText className="w-6 h-6 text-gray-500" />
