@@ -1,7 +1,7 @@
 import { ActionFunctionArgs, redirect } from "react-router";
 import { AxiosError } from "axios";
 import { firebaseDocumentAPI } from "../../services/documentApi";
-import { authService } from "../../services/auth/firebase";
+import { authService } from "../../services";
 
 const { login, register, logout } = authService;
 

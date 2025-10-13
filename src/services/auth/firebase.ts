@@ -1,6 +1,6 @@
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile, } from "firebase/auth";
 import { firebaseAuth } from "../firebase";
-import { AuthService } from "./interface";
+import { AuthService } from ".";
 
 
 export const authService: AuthService = {

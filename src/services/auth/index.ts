@@ -1,3 +1,6 @@
+// export * from "./api";
+export * from "./firebase";
+
 export interface AuthService {
     login: (email: string, password: string) => Promise<string>;
     register: (email: string, password: string, displayName: string) => Promise<string>;
@@ -7,3 +10,5 @@ export interface AuthService {
     confirmPasswordReset: (code: string, newPassword: string) => Promise<void>;
     userProfile: () => Promise<{ email_address: string; full_name: string } | null>;
 }
+
+
