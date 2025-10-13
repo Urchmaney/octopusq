@@ -1,18 +1,19 @@
 import { Params, redirect } from "react-router";
-import { userProfile } from "../../services";
+import { authService } from "../../services/auth/firebase";
 import { firebaseDocumentAPI } from "../../services/documentApi";
+
+const { userProfile } = authService;
 
 export async function WorkspaceLoader() {
   try {
-    const user = (await userProfile()).data;
+    const user = await userProfile();
     if (!user) return redirect("/auth/login");
-
-    // const workspaces = (await userWorkspaces()).data;
 
     return {
       user: { email: user.email_address, fullName: user.full_name },
       workspaces: (await firebaseDocumentAPI.getProjects()).map(x => ({ id: x.id, name: x.content }))
     };
+
   } catch (e) {
     return redirect("/auth/login");
   }
