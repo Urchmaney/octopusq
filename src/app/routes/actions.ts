@@ -1,7 +1,9 @@
 import { ActionFunctionArgs, redirect } from "react-router";
-import { login, logout, register } from "../../services";
 import { AxiosError } from "axios";
 import { firebaseDocumentAPI } from "../../services/documentApi";
+import { authService } from "../../services/auth/firebase";
+
+const { login, register, logout } = authService;
 
 function handleError(error: unknown) {
   const errors = (error as AxiosError).response?.data || (error as AxiosError).message;
@@ -15,7 +17,7 @@ export async function loginAction({ request }: ActionFunctionArgs) {
       formData.get("email")?.toString() || "",
       formData.get("password")?.toString() || ""
     );
-    return redirect("/workspaces");
+    return redirect("/");
   } catch (e) {
     return handleError(e);
   }
@@ -24,12 +26,13 @@ export async function loginAction({ request }: ActionFunctionArgs) {
 export async function registerAction({ request }: ActionFunctionArgs) {
   try {
     const formData = await request.formData();
+
     await register(
       formData.get("email")?.toString() || "",
       formData.get("password")?.toString() || "",
       formData.get("full_name")?.toString() || "",
     );
-    return redirect("/workspaces");
+    return redirect("/");
   } catch (e) {
     return handleError(e);
   }
