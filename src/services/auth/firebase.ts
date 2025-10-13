@@ -20,10 +20,10 @@ export const authService: AuthService = {
         const user = firebaseAuth.currentUser;
         return user ? user.uid : null;
     },
-    sendPasswordResetEmail: function (email: string): Promise<void> {
+    sendPasswordResetEmail: function (_: string): Promise<void> {
         throw new Error("Function not implemented.");
     },
-    confirmPasswordReset: function (code: string, newPassword: string): Promise<void> {
+    confirmPasswordReset: function (_: string, __: string): Promise<void> {
         throw new Error("Function not implemented.");
     },
     userProfile: function (): Promise<{ email_address: string; full_name: string; } | null> {
