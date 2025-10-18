@@ -1,17 +1,12 @@
 import { FileText } from "lucide-react";
 import { useActiveDocument } from "../../contexts/activeDocumentContext";
-import { useNavigate } from "react-router";
-import { useEffect, useState } from "react";
-import { firebaseDocumentAPI, TDocument } from "../../services/documentApi";
+import { useLoaderData, useNavigate } from "react-router";
+import { TDocument } from "../../services/documentApi";
 
 export function Dashboard() {
-  const [files, setFiles] = useState<TDocument[] | null>(null);
+  const data = useLoaderData() as { favorites: TDocument[] };
 
-  useEffect(() => {
-    firebaseDocumentAPI.getFavoriteDocs().then(x => {
-      setFiles(x);
-    })
-  }, [])
+  const { favorites: files } = data;
 
   const { setActiveDocument, setActiveDocumentName } = useActiveDocument();
   const navigate = useNavigate();

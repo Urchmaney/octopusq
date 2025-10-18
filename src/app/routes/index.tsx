@@ -3,7 +3,7 @@ import { AuthLayout, Login, Register } from "../auth";
 // import { Workspace } from "../../components";
 import { Dashboard, Projects, WorkspaceLayout, EditorPage } from "../workspace";
 import { AddNewFileDocumentAction, WorkspaceAction, loginAction, registerAction } from "./actions";
-import { ProjectLoader, WorkspaceLoader } from "./loaders";
+import { favoritesLoader, ProjectLoader, WorkspaceLoader } from "./loaders";
 
 
 export default createBrowserRouter([
@@ -24,6 +24,7 @@ export default createBrowserRouter([
       {
         path: "dashboard",
         Component: Dashboard,
+        loader: favoritesLoader,
         hydrateFallbackElement: <>loading</>
       },
       {
@@ -36,6 +37,7 @@ export default createBrowserRouter([
       {
         index: true,
         Component: Dashboard,
+        loader: favoritesLoader,
         hydrateFallbackElement: <>loading</>,
       },
       {
