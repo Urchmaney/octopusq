@@ -1,5 +1,6 @@
 import { addDoc, arrayUnion, collection, doc, documentId, DocumentSnapshot, getDoc, getDocs, limit, query, setDoc, updateDoc, where } from "firebase/firestore/lite";
 import { firestoreDb } from "./firebase";
+import { authService } from "./auth";
 
 export interface TDocument {
   id: string;
@@ -80,18 +81,29 @@ const questionConverter = {
   },
 }
 
-const documentCollection = collection(firestoreDb, "documents").withConverter(documentConverter);
-const resultDocumentCollection = collection(firestoreDb, "document_results").withConverter(documentResultConverter);
-const questionCollection = collection(firestoreDb, "questions").withConverter(questionConverter);
-const favoriteCollection = collection(firestoreDb, "favorites");
+const documentCollection = (userId: string) => collection(firestoreDb, "users", userId, "documents").withConverter(documentConverter);
+const resultDocumentCollection = (userId: string) => collection(firestoreDb, "users", userId, "document_results").withConverter(documentResultConverter);
+const questionCollection = (userId: string) => collection(firestoreDb, "users", userId, "questions").withConverter(questionConverter);
+const favoriteCollection = (userId: string) => collection(firestoreDb, "users", userId, "favorites");
 
-const getDocumentReference = (id: string) => doc(firestoreDb, "documents", id).withConverter(documentConverter);
-const getResultDocumentReference = (id: string) => doc(firestoreDb, "document_results", id).withConverter(documentResultConverter);
-const getQuestionReference = (id: string) => doc(firestoreDb, "questions", id).withConverter(questionConverter);
+const getDocumentReference = (id: string, userId: string) => doc(firestoreDb, "users", userId, "documents", id).withConverter(documentConverter);
+const getResultDocumentReference = (id: string, userId: string) => doc(firestoreDb, "users", userId, "document_results", id).withConverter(documentResultConverter);
+const getQuestionReference = (id: string, userId: string) => doc(firestoreDb, "users", userId, "questions", id).withConverter(questionConverter);
+
+const { getCurrentUser } = authService
+
+async function getUserId(): Promise<string> {
+  const userId = await getCurrentUser();
+  if (!userId) throw "not logged in";
+
+  return userId;
+}
+
 
 export const firebaseDocumentAPI: DocumentAPI = {
   getDocument: async function (documentId: string): Promise<TDocument | null> {
-    const docSnapshot = await getDoc(getDocumentReference(documentId));
+    const userId = await getUserId()
+    const docSnapshot = await getDoc(getDocumentReference(documentId, userId));
     if (docSnapshot.exists()) {
       return docSnapshot.data();
     }
@@ -99,18 +111,21 @@ export const firebaseDocumentAPI: DocumentAPI = {
   },
 
   updateDocument: async function (documentId: string, document: Partial<TDocument>): Promise<void> {
-    return updateDoc(getDocumentReference(documentId), {
+    const userId = await getUserId();
+    return updateDoc(getDocumentReference(documentId, userId), {
       ...document
     });
   },
 
   addQuestion: async function (documentId: string | null, question: Omit<Question, "id">): Promise<Question> {
-    const docRef = await addDoc(questionCollection, { ...question, documentId } as Omit<Question, "id">);
+    const userId = await getUserId();
+    const docRef = await addDoc(questionCollection(userId), { ...question, documentId } as Omit<Question, "id">);
     return { ...question, id: docRef.id };
   },
 
   getQuestion: async function (questionId: string): Promise<Question | null> {
-    const questionSnapshot = await getDoc(getQuestionReference(questionId));
+    const userId = await getUserId();
+    const questionSnapshot = await getDoc(getQuestionReference(questionId, userId));
     if (questionSnapshot.exists()) {
       return questionSnapshot.data();
     }
@@ -118,7 +133,8 @@ export const firebaseDocumentAPI: DocumentAPI = {
   },
 
   getQuestionDocuments: async function (questionId: string): Promise<TDocument[]> {
-    const q = query(documentCollection, where("questionId", "==", questionId));
+    const userId = await getUserId();
+    const q = query(documentCollection(userId), where("questionId", "==", questionId));
     const documentSnapshot = await getDocs(q);
     const documents: TDocument[] = [];
     documentSnapshot.forEach((doc) => {
@@ -128,38 +144,43 @@ export const firebaseDocumentAPI: DocumentAPI = {
   },
 
   createNewDoc: async function (name: string, questionId: string, parentQuestionIds: Array<string>): Promise<TDocument> {
+    const userId = await getUserId();
     if (!questionId) throw 'Question must be present to create a document.';
     const content = "[]";
-    const resultDocument = doc(resultDocumentCollection);
+    const resultDocument = doc(resultDocumentCollection(userId));
     parentQuestionIds = [...parentQuestionIds, questionId];
-    const document = await addDoc(documentCollection, { name, questionId, content, resultId: resultDocument.id, parentQuestionIds } as TDocument);
+    const document = await addDoc(documentCollection(userId), { name, questionId, content, resultId: resultDocument.id, parentQuestionIds } as TDocument);
     await setDoc(resultDocument, { content: '[]', documentId: document.id, id: resultDocument.id });
     return { id: document.id, name, questionId, content, parentQuestionIds, resultId: resultDocument.id };
   },
 
-  updateDocumentResult: function (documentResultId: string, content: string): Promise<void> {
-    return updateDoc(getResultDocumentReference(documentResultId), {
+  updateDocumentResult: async function (documentResultId: string, content: string): Promise<void> {
+    const userId = await getUserId();
+    return updateDoc(getResultDocumentReference(documentResultId, userId), {
       content
     });
   },
 
   getDocumentResult: async function (documentResultId: string): Promise<TDocumentResult | null> {
-    const documentResultSnapshot = await getDoc(getResultDocumentReference(documentResultId));
+    const userId = await getUserId();
+    const documentResultSnapshot = await getDoc(getResultDocumentReference(documentResultId, userId));
     if (!documentResultSnapshot.exists()) return null;
     return documentResultSnapshot.data();
   },
 
   setQuestionActiveDocument: async function (questionId: string, document: TDocument): Promise<void> {
-    await updateDoc(getQuestionReference(questionId), { activeFwdDocumentId: document.id });
+    const userId = await getUserId();
+    await updateDoc(getQuestionReference(questionId, userId), { activeFwdDocumentId: document.id });
   },
 
   getFavoriteDocs: async function (): Promise<TDocument[]> {
-    const firstDocumentQuery = query(favoriteCollection, limit(1));
+    const userId = await getUserId();
+    const firstDocumentQuery = query(favoriteCollection(userId), limit(1));
     const documentSnapshot = await getDocs(firstDocumentQuery);
     if (documentSnapshot.empty) return [];
 
     const favoritesIds = documentSnapshot.docs[0].data().data as Array<string>;
-    const docsQuery = query(documentCollection, where(documentId(), 'in', favoritesIds));
+    const docsQuery = query(documentCollection(userId), where(documentId(), 'in', favoritesIds));
 
     const querySnapshot = await getDocs(docsQuery);
     const documents: TDocument[] = [];
@@ -168,13 +189,14 @@ export const firebaseDocumentAPI: DocumentAPI = {
   },
 
   addDocToFavorite: async function (docId: string): Promise<boolean> {
+    const userId = await getUserId();
     try {
       if (!docId) return false;
-      const firstDocumentQuery = query(favoriteCollection, limit(1));
+      const firstDocumentQuery = query(favoriteCollection(userId), limit(1));
       const documentSnapshot = await getDocs(firstDocumentQuery);
       if (documentSnapshot.empty) return false;
 
-      const ref = doc(favoriteCollection, documentSnapshot.docs[0].id);
+      const ref = doc(favoriteCollection(userId), documentSnapshot.docs[0].id);
       await updateDoc(ref, { data: arrayUnion(docId) });
       return true;
     } catch (e) {
@@ -182,7 +204,8 @@ export const firebaseDocumentAPI: DocumentAPI = {
     }
   },
   getProjects: async function (): Promise<Question[]> {
-    const q = query(questionCollection, where("documentId", '==', null));
+    const userId = await getUserId();
+    const q = query(questionCollection(userId), where("documentId", '==', null));
     const querySnapshot = await getDocs(q);
     const questions: Question[] = [];
     querySnapshot.forEach((doc) => {

@@ -28,3 +28,8 @@ export async function ProjectLoader({
   const documents = await firebaseDocumentAPI.getQuestionDocuments(question.id);
   return { question, documents };
 }
+
+export async function favoritesLoader() {
+  const favorites = await firebaseDocumentAPI.getFavoriteDocs()
+  return { favorites }
+}
