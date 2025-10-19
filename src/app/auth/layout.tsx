@@ -1,8 +1,21 @@
-import { Link, Outlet } from "react-router"
-import { Card, CardHeader } from "../../components"
+import { Link, Navigate, Outlet } from "react-router";
+import { Card, CardHeader } from "../../components";
 import journeyImg from "../../assets/journey.jpg";
+import { firebaseAuth } from "../../services/firebase";
+import { useState } from "react";
+
+
 
 export function AuthLayout() {
+   const [user, setUser] = useState<string | null>(null);
+   firebaseAuth.onAuthStateChanged((user) => {
+    if (user) {
+       setUser(user.uid);
+    }
+  })
+
+  if (user) return <Navigate to="/" replace />;
+
   return (
     <div className="flex min-h-screen">
       {/* Left side with illustration */}
