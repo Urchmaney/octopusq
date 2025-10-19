@@ -102,7 +102,7 @@ export const WorkspaceLayout = () => {
                   <div className="py-1" role="none">
                     {/* <!-- Active: "bg-gray-100 text-gray-900 outline-hidden", Not Active: "text-gray-700" --> */}
                     <a href="#" className="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabIndex={-1} id="menu-item-0">Account settings</a>
-                    <Form method="post" action={`/workspaces/${activeWorkspace?.id}`}>
+                    <Form method="post" action={`/`}>
                       <input type="hidden" name="action_type" value={"logout"} />
                       <button type="submit" className="block cursor-pointer w-full px-4 py-2 text-left text-sm text-gray-700 bg-red-500 rounded-2xl" role="menuitem" tabIndex={-1}>Sign out</button>
                     </Form>

@@ -1,4 +1,4 @@
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile, } from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile, } from "firebase/auth";
 import { firebaseAuth } from "../firebase";
 import { AuthService } from ".";
 
@@ -13,8 +13,8 @@ export const authService: AuthService = {
         await updateProfile(userCredential.user, { displayName })
         return userCredential.user.uid;
     },
-    logout: function (): Promise<void> {
-        throw new Error("Function not implemented.");
+    logout: async function (): Promise<void> {
+        await signOut(firebaseAuth)
     },
     getCurrentUser: async function (): Promise<string | null> {
         const user = firebaseAuth.currentUser;
