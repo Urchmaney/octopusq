@@ -37,8 +37,8 @@ export const authService: AuthService = {
     throw new Error('Function not implemented.');
   },
   userProfile: function (): Promise<{ email_address: string; full_name: string; } | null> {
-    return instance.get("/users", { withCredentials: true })
-  }
+    return instance.get("/users", { withCredentials: true });
+  },
 }
 
 
