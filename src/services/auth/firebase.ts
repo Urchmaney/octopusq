@@ -1,4 +1,4 @@
-import { browserLocalPersistence, createUserWithEmailAndPassword, inMemoryPersistence, setPersistence, signInWithEmailAndPassword, signOut, updateProfile, } from "firebase/auth";
+import { browserLocalPersistence, createUserWithEmailAndPassword, setPersistence, signInWithEmailAndPassword, signOut, updateProfile, } from "firebase/auth";
 import { firebaseAuth } from "../firebase";
 import { AuthService } from ".";
 
