@@ -11,7 +11,7 @@ export async function WorkspaceLoader() {
 
     return {
       user: { email: user.email_address, fullName: user.full_name },
-      workspaces: (await firebaseDocumentAPI.getProjects()).map(x => ({ id: x.id, name: x.content }))
+      workspaces: (await firebaseDocumentAPI.getProjects())
     };
 
   } catch (e) {

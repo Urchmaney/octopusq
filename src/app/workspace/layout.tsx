@@ -4,6 +4,7 @@ import { Form, Outlet, useLoaderData, useMatch, useNavigate, useParams } from "r
 import { useClickOutside, useFetcherSumbit, type WorkspaceContext } from "../../hooks";
 import { Input, SecondaryButton, Modal } from "../../components";
 import { ActiveDocumentContext } from "../../contexts/activeDocumentContext";
+import { Question } from "../../services/documentApi";
 
 const navLinks = [
   { label: "Dashboard", path: () => `/dashboard/`, pattern: "/dashboard" },
@@ -12,22 +13,21 @@ const navLinks = [
   { label: "Settings", path: (workspaceId: string) => `/workspaces/${workspaceId}/settings/`, pattern: "/workspaces/:workspaceId?/settings" },
 ];
 
-type Workspace = { id: string, name: string };
 type User = { email: string, fullName: string };
 
 export const WorkspaceLayout = () => {
   const navigate = useNavigate();
-  const { user, workspaces } = useLoaderData() as { user: User, workspaces: Workspace[] };
+  const { user, workspaces } = useLoaderData() as { user: User, workspaces: Question[] };
   const { workspaceId } = useParams();
   const { fetcher, busy, data } = useFetcherSumbit();
 
 
-  const [activeWorkspace, setActiveWorkspace] = useState<Workspace>(workspaces.find(x => x.id === workspaceId) || workspaces[0]);
+  const [activeWorkspace, setActiveWorkspace] = useState<Question>(workspaces.find(x => x.id === workspaceId) || workspaces[0]);
   const [createWorkspace, setCreateWorkspace] = useState<boolean>(false);
   const [activeDocument, setActiveDocument] = useState<{ id: string, name: string } | null>(null);
 
 
-  const openProject = (workspace: Workspace) => {
+  const openProject = (workspace: Question) => {
     setActiveWorkspace(workspace);
     navigate(`/projects/${workspace.id}`)
   }
@@ -114,8 +114,8 @@ export const WorkspaceLayout = () => {
           </header>
 
           {/* Content Area */}
-          <main className="flex-1 p-2 overflow-y-auto grow">
-            <Outlet context={{ activeWorkspace: activeWorkspace?.id, setActiveWorkspace: setActiveWorkspaceFromId } satisfies WorkspaceContext} />
+          <main className="flex-1 p-2 overflow-y-auto grow bg-white">
+            <Outlet context={{ activeWorkspace: activeWorkspace?.id, setActiveWorkspace: setActiveWorkspaceFromId, allWorkspaces: workspaces } satisfies WorkspaceContext} />
           </main>
         </div>
         {
@@ -160,11 +160,11 @@ const NavItem = ({ label, path, pattern }: { label: string, path: string, patter
   )
 }
 
-function Workspace({ workspaces, activeWorkspace, onClickWorkspace, onCreateWorkspace }: { workspaces: { id: string, name: string }[], activeWorkspace: { id: string, name: string } | undefined, onCreateWorkspace: () => void, onClickWorkspace: (workspace: Workspace) => void }) {
+function Workspace({ workspaces, activeWorkspace, onClickWorkspace, onCreateWorkspace }: { workspaces: Question[], activeWorkspace: Question | undefined, onCreateWorkspace: () => void, onClickWorkspace: (workspace: Question) => void }) {
   const [showMenu, setShowMenu] = useState<boolean>(false);
   const menuRef = useClickOutside(() => { setShowMenu(false) });
 
-  const clickWorkspace = (w: Workspace) => {
+  const clickWorkspace = (w: Question) => {
     onClickWorkspace(w);
     setShowMenu(false);
   }
@@ -176,7 +176,7 @@ function Workspace({ workspaces, activeWorkspace, onClickWorkspace, onCreateWork
         <div className="flex items-center space-x-2 justify-between hover:bg-white/10 p-2 cursor-pointer" onClick={() => setShowMenu(true)}>
           <div className="flex items-center space-x-2">
             <div className="w-2 h-2 rounded-full bg-fuchsia-500"></div>
-            <span>{activeWorkspace?.name || ""}</span>
+            <span>{activeWorkspace?.content || ""}</span>
           </div>
 
           <ChevronUp className="text-amber-50 w-5 h-5" />
@@ -193,7 +193,7 @@ function Workspace({ workspaces, activeWorkspace, onClickWorkspace, onCreateWork
           {
             workspaces.map((x, i) => (
               <div key={`workspace_menu_${i}`} onClick={() => clickWorkspace(x)} className={`${x.id === activeWorkspace?.id ? 'bg-[#d4d1ca]' : ''}`}>
-                <a className="block px-4 py-2 text-sm text-gray-700 cursor-pointer" role="menuitem" tabIndex={-1} id="menu-item-0">{x.name}</a>
+                <a className="block px-4 py-2 text-sm text-gray-700 cursor-pointer" role="menuitem" tabIndex={-1} id="menu-item-0">{x.content}</a>
               </div>
             ))
           }
