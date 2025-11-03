@@ -71,7 +71,7 @@ export async function WorkspaceAction({ request }: ActionFunctionArgs) {
           activeFwdDocumentId: "",
           activeFwdDocumentResultId: ""
         })
-        return { data: { name: result.content, id: result.id} };
+        return { data: { name: result.content, id: result.id } };
       } catch (e) {
         return handleError(e);
       }
@@ -88,6 +88,38 @@ export async function AddNewFileDocumentAction({ request }: ActionFunctionArgs) 
       []
     );
     return { data: document, errors: [] };
+  }
+  catch (e) {
+    return handleError(e);
+  }
+}
+
+export async function AddFileAndWorkspaceAction({ request }: ActionFunctionArgs) {
+  try {
+    const formData = await request.formData();
+    const workspaceName = formData.get("workspace_name") as string;
+    const selectedWorkspaceId = formData.get("workspace_id") as string;
+    const fileName = formData.get("file_name") as string;
+    let workspaceId: string = selectedWorkspaceId;
+    if (selectedWorkspaceId === "__create_new__") {
+      const newQuestion = await firebaseDocumentAPI.addQuestion(null, {
+        content: workspaceName,
+        documentId: null,
+        activeFwdDocumentId: "",
+        activeFwdDocumentResultId: ""
+      });
+      workspaceId = newQuestion.id;
+    }
+    const newDocument = await firebaseDocumentAPI.createNewDoc(
+      fileName,
+      workspaceId,
+      []
+    );
+    await firebaseDocumentAPI.setQuestionActiveDocument(workspaceId, newDocument);
+    await firebaseDocumentAPI.addDocToFavorite(newDocument.id);
+
+    return { data: {
+      document: newDocument, workspaceId }, errors: [] };
   }
   catch (e) {
     return handleError(e);

@@ -2,11 +2,11 @@ import { FileText } from "lucide-react";
 import { useActiveDocument } from "../../contexts/activeDocumentContext";
 import { useLoaderData, useNavigate } from "react-router";
 import { TDocument } from "../../services/documentApi";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "../../components/input/Input";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "../../components/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../../components/dialog/Dialog";
-import { useWorkspaceContext } from "../../hooks";
+import { useFetcherSumbit, useWorkspaceContext } from "../../hooks";
 
 export function Dashboard() {
   const data = useLoaderData() as { favorites: TDocument[] };
@@ -14,6 +14,7 @@ export function Dashboard() {
   const { favorites: files } = data;
 
   const { setActiveDocument, setActiveDocumentName } = useActiveDocument();
+  const { setActiveWorkspace } = useWorkspaceContext()
   const navigate = useNavigate();
   const { activeWorkspace, allWorkspaces: workspaces } = useWorkspaceContext()
 
@@ -22,6 +23,7 @@ export function Dashboard() {
   const [selectedWorkspace, setSelectedWorkspace] = useState<string>(activeWorkspace);
   const [newWorkspaceQuestion, setNewWorkspaceQuestion] = useState("");
 
+  const { fetcher, errors, busy, data: newData } = useFetcherSumbit();
 
 
   const openFile = (fileId: string, fileName: string) => {
@@ -41,13 +43,16 @@ export function Dashboard() {
     setNewWorkspaceQuestion("");
   }
 
-  const handleCreate = async (e?: React.FormEvent) => {
-    e?.preventDefault();
-    // For now just log the values; integration with API can be added later
-    console.log({ fileName, selectedWorkspace, newWorkspaceQuestion });
-    // TODO: call firebaseDocumentAPI.addQuestion/createNewDoc as needed
-    closeCreateModal();
-  }
+  useEffect(() => {
+    if (newData && !busy) {
+      setShowCreateModal(false);
+      setFileName("");
+      setNewWorkspaceQuestion("");
+      setActiveWorkspace(newData.workspaceId);
+      openFile(newData.document.id, newData.document.name);
+    }
+  }, [newData, busy]);
+
 
   if (files === null) return (
     <p>Loading</p>
@@ -75,18 +80,28 @@ export function Dashboard() {
               </DialogDescription>
             </DialogHeader>
 
-            <form onSubmit={handleCreate} className="space-y-4">
-
+            {
+              errors && errors.length > 0 && (
+                <ul className="mt-3 list-disc px-2">
+                  {
+                    errors?.map((x, i) => (
+                      <li key={`create_file_error_${i}`} className="text-red-500 text-sm">{x}</li>
+                    ))
+                  }
+                </ul>
+              )
+            }
+            <fetcher.Form className="space-y-4" action="/dashboard" method="post">
               <div className="flex flex-col justify-start text-black">
                 <label className="text-sm text-gray-600">File name</label>
-                <Input value={fileName} onChange={(e) => setFileName(e.target.value)} placeholder="Document Name" />
+                <Input value={fileName} name="file_name" onChange={(e) => setFileName(e.target.value)} placeholder="Document Name" required />
               </div>
 
               <div className="block">
                 <label className="text-sm text-gray-600 mb-2">Workspace</label>
-                <Select value={selectedWorkspace} onValueChange={(value) => setSelectedWorkspace(value) }>
+                <Select name="workspace_id" value={selectedWorkspace} onValueChange={(value) => setSelectedWorkspace(value)}>
                   <SelectTrigger className="bg-white border-gray-300 text-gray-900 focus:ring-2 focus:ring-primary/20 focus:border-primary">
-                    <SelectValue placeholder="Select workspace"/>
+                    <SelectValue placeholder="Select workspace" />
                   </SelectTrigger>
                   <SelectContent className="bg-white text-black">
                     {workspaces.map((w) => (
@@ -100,16 +115,15 @@ export function Dashboard() {
               {selectedWorkspace === "__create_new__" && (
                 <label className="block">
                   <div className="text-sm text-gray-600">Workspace question</div>
-                  <Input value={newWorkspaceQuestion} onChange={(e) => setNewWorkspaceQuestion(e.target.value)} placeholder="Describe the workspace question" />
+                  <Input name="workspace_name" className="text-black" value={newWorkspaceQuestion} onChange={(e) => setNewWorkspaceQuestion(e.target.value)} placeholder="Describe the workspace question" />
                 </label>
               )}
 
               <div className="flex items-center gap-3">
-                <button type="submit" className="px-4 py-2 bg-green-600 text-white rounded-md">Create</button>
-                <button type="button" onClick={closeCreateModal} className="px-4 py-2 bg-gray-500 rounded-md">Cancel</button>
+                <button type="submit" className="px-4 py-2 bg-green-600 text-white rounded-md cursor-pointer">{busy ? 'Creating' : 'Create'}</button>
+                <button type="button" onClick={closeCreateModal} className="px-4 py-2 bg-gray-500 rounded-md cursor-pointer">Cancel</button>
               </div>
-            </form>
-
+            </fetcher.Form>
           </DialogContent>
         </Dialog>
       </div>

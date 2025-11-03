@@ -192,10 +192,13 @@ export const firebaseDocumentAPI: DocumentAPI = {
     const userId = await getUserId();
     try {
       if (!docId) return false;
+
       const firstDocumentQuery = query(favoriteCollection(userId), limit(1));
       const documentSnapshot = await getDocs(firstDocumentQuery);
-      if (documentSnapshot.empty) return false;
-
+      if (documentSnapshot.empty) {
+        await addDoc(favoriteCollection(userId), { data: [docId] });
+        return true;
+      }
       const ref = doc(favoriteCollection(userId), documentSnapshot.docs[0].id);
       await updateDoc(ref, { data: arrayUnion(docId) });
       return true;
